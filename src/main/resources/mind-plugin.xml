@@ -1,0 +1,64 @@
+<!--
+  Copyright (C) 2014 STMicroelectronics
+
+ This file is part of "Mind Compiler" is free software: you can redistribute 
+ it and/or modify it under the terms of the GNU Lesser General Public License 
+ as published by the Free Software Foundation, either version 3 of the 
+ License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful, but WITHOUT 
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+ details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ Contact: mind@ow2.org
+
+ Authors: Julien TOUS
+ Contributors: Stephane SEYVOZ
+
+ -->
+<plugin id="org.ow2.mind.simple-c-macro-generator" name="'Simple' static-analysis-friendly macro generator plug-in.">
+	<extension point="org.ow2.mind.predefined-annotations">
+		<annotation package="org.ow2.mind.adl.annotations" />
+	</extension>
+
+	<!-- Extension that add a '<minus-minus>simple-gen' command-line option to mindc -->
+    <extension
+    	point="org.ow2.mind.mindc.command-line-options">
+		
+		<cmdFlag
+			id="org.ow2.mind.Simple"
+			longName="simple-gen"
+			description="Use the static-analysis-friendly Simple generator" />
+	</extension>
+
+	<extension
+        point="org.ow2.mind.plugin.guice-module">
+        <module
+            class="org.ow2.mind.adl.SimpleADLBackendModule">
+            <override
+                class="org.ow2.mind.adl.ADLBackendModule" />
+ 			<enableWhen>
+				<cmdOption
+					id="org.ow2.mind.Simple" />
+			</enableWhen>
+        </module>
+    </extension>
+
+	<extension
+        point="org.ow2.mind.plugin.guice-module">
+        <module
+            class="org.ow2.mind.idl.SimpleIDLBackendModule">
+            <override
+                class="org.ow2.mind.idl.IDLBackendModule" />
+ 			<enableWhen>
+				<cmdOption
+					id="org.ow2.mind.Simple" />
+			</enableWhen>
+        </module>
+    </extension>
+ 
+</plugin>
