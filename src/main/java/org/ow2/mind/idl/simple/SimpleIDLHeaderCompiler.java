@@ -21,26 +21,32 @@
  */
 
 package org.ow2.mind.idl.simple;
-
-import static org.ow2.mind.adl.simple.SimpleADLDefinitionSourceGenerator.typeToString;
+		
+import static org.ow2.mind.SourceFileWriter.writeToFile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.objectweb.fractal.adl.ADLException;
+import org.objectweb.fractal.adl.CompilerError;
 import org.objectweb.fractal.adl.util.FractalADLLogManager;
 import org.ow2.mind.InputResourceLocator;
 import org.ow2.mind.InputResourcesHelper;
 import org.ow2.mind.PathHelper;
+import org.ow2.mind.SimpleMacroHelper;
 import org.ow2.mind.adl.simple.SimpleADLDefinitionSourceGenerator;
+import org.ow2.mind.idl.IDLLoader;
 import org.ow2.mind.idl.IDLVisitor;
 import org.ow2.mind.idl.ast.IDL;
+import org.ow2.mind.idl.ast.IDLASTHelper;
 import org.ow2.mind.idl.ast.Include;
 import org.ow2.mind.idl.ast.IncludeContainer;
 import org.ow2.mind.idl.ast.InterfaceDefinition;
@@ -49,6 +55,7 @@ import org.ow2.mind.idl.ast.Parameter;
 import org.ow2.mind.idl.ast.Type;
 import org.ow2.mind.idl.ast.TypeCollectionContainer;
 import org.ow2.mind.idl.ast.TypeDefinition;
+import org.ow2.mind.io.IOErrors;
 import org.ow2.mind.io.OutputFileLocator;
 import org.ow2.mind.st.AbstractStringTemplateProcessor;
 import org.ow2.mind.st.BackendFormatRenderer;
@@ -67,107 +74,152 @@ public class SimpleIDLHeaderCompiler extends AbstractStringTemplateProcessor imp
 	public static final String     TEMPLATE_NAME    = "SimpleIDL";
 
 	/** The default templateGroupName used by this class. */
-	public static final String     DEFAULT_TEMPLATE = "st.interfaces.simple.SimpleIDL";
+	public static final String     DEFAULT_TEMPLATE = "st.interfaces.simple.IDL2C";
 
 	protected final static String  IDT_FILE_EXT     = "idt.h";
 	protected final static String  ITF_FILE_EXT     = "itf.h";
 
-	protected static Logger        depLogger        = FractalADLLogManager
-			.getLogger("dep");
+	protected static Logger        depLogger        = FractalADLLogManager.getLogger("dep");
 
 	protected static Logger logger = FractalADLLogManager.getLogger("simple-gen");
 	
 	@Inject
 	protected OutputFileLocator    outputFileLocatorItf;
-
+	
+	@Inject
+	IDLLoader idlLoaderItf;
+	
+	//To relaunch IDL treatment on parent IDL
+	@Inject
+	IDLVisitor idlVisitorItf; 
+	
 	@Inject
 	protected InputResourceLocator inputResourceLocatorItf;
 
 	@Inject
-	protected SimpleIDLHeaderCompiler(
-			@Named(TEMPLATE_NAME) final String templateGroupName) {
+	protected SimpleIDLHeaderCompiler(@Named(TEMPLATE_NAME) final String templateGroupName) {
 		super(templateGroupName);
 	}
 
 	// ---------------------------------------------------------------------------
 	// Implementation of the Visitor interface
 	// ---------------------------------------------------------------------------
-
+	
 	// TODO: Use StringTemplate + regenerate method (incremental compilation)
 	public void visit(final IDL idl, final Map<Object, Object> context)
 			throws ADLException {
 
-		// ignore include headers (.idt etc)
-		if (idl.getName().startsWith("/"))
+		// Ignore include headers (.idt etc)
+		final String headerFileName;
+		if (idl.getName().startsWith("/")) {
+			// IDT file. (Don't really understand this test)
+			// Anyway I don't treat .idt files.
+			// headerFileName = PathHelper.replaceExtension(idl.getName(), IDT_FILE_EXT);
 			return;
-		
-		try {
-			// Creating a File and a PrintWriter to write in it
+		} else {
+			headerFileName = PathHelper.fullyQualifiedNameToPath(idl.getName(),ITF_FILE_EXT);    
 			final File headerFile = outputFileLocatorItf.getCSourceOutputFile(
-					PathHelper.fullyQualifiedNameToPath(idl.getName(), "itf.h"), context);
-			PrintWriter itfWriter = new PrintWriter(headerFile,"ASCII");
-			
-			SimpleADLDefinitionSourceGenerator.openIncludeGuard(idl.getName(), itfWriter);
-			
-			// Propagating the include directive
-			if (idl instanceof IncludeContainer) {
-				Include[] includes = ((IncludeContainer)idl).getIncludes();
-				if ((includes != null) && (includes.length !=0)){
-					itfWriter.println();
-					itfWriter.println("/* Begin includes imported from interface */");
-					for (Include include : includes) {
-						String incPath = include.getPath();
-						//Strip the leading annoying / from the include
-						if (incPath.startsWith("\"")) incPath = "\"" + incPath.substring(2);
-						itfWriter.println("#include " + incPath );
-					}
-					itfWriter.println("/* End includes imported from interface */");
-					itfWriter.println();
-				}
-			}	
+			        headerFileName, context);
+		    if (regenerate(headerFile, idl, context)) {
+		      final StringTemplate st = getInstanceOf("idlFile");
 
-			// propagating types defined directly in the .itf
-			if (idl instanceof TypeCollectionContainer) {
-				for (final Type type : ((TypeCollectionContainer) idl).getTypes()) {
-					if (type instanceof TypeDefinition)
-						itfWriter.println("typedef " + typeToString(((TypeDefinition)type).getType()) + " " + typeToString(type) + ";");
-				}
-			}
-
-			// define a struct and a typedef for the interface.
-			if (idl instanceof InterfaceDefinition) {
-				Method[] meths = ((InterfaceDefinition)idl).getMethods();
-				if ((meths != null) && (meths.length !=0)){
-					itfWriter.println();
-					itfWriter.println("/* Begin interface type definition */");
-					itfWriter.println("struct " + idl2type(idl) + "_s {");
-					for (Method meth : meths) {
-						itfWriter.print("\t" + typeToString(meth.getType()) + " (*" + meth.getName() + ")(" );
-						Parameter[] parameters = meth.getParameters();
-						SimpleADLDefinitionSourceGenerator.writeCFunctionParameters(parameters,itfWriter);
-						itfWriter.println(");");
-					}
-					itfWriter.println("};" );
-					itfWriter.println();
-					itfWriter.println("typedef struct " + idl2type(idl) + "_s " + idl2type(idl) + ";");
-					itfWriter.println("/* End interface type definition */");
-					itfWriter.println();
-				}
-			}
-			// Close the interface header file.
-			SimpleADLDefinitionSourceGenerator.closeIncludeGuard(idl.getName(), itfWriter);
-			itfWriter.close();
-
-		} catch (FileNotFoundException e) {
-			logger.info("Somehow calculated file path are wrong this is a BUG  !");
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e1) {
-			logger.info("ASCII encoding is not supported on your platform !");
-			e1.printStackTrace();
+		      st.setAttribute("idl", idl);
+		      try {
+		        writeToFile(headerFile, st.toString());
+		      } catch (final IOException e) {
+		        throw new CompilerError(IOErrors.WRITE_ERROR, e,
+		            headerFile.getAbsolutePath());
+		      }
+		    }
 		}
+		
+		
+		
+//		try {
+//			// Creating a File and a PrintWriter to write in it
+//			final File headerFile = outputFileLocatorItf.getCSourceOutputFile(
+//					PathHelper.fullyQualifiedNameToPath(idl.getName(), "itf.println.h"), context);
+//			PrintWriter itfWriter = new PrintWriter(headerFile,"ASCII");
+//			
+//			SimpleMacroHelper.openIncludeGuard(idl.getName(), itfWriter);
+//			
+//			
+//			// interface inheritance and ImportIDL.
+//			try {
+//				if (idl instanceof InterfaceDefinition) {
+//					itfWriter.println("/* Begin includes referenced interface */");
+//					for (InterfaceDefinition itfDef : IDLASTHelper.getReferencedInterfaces(idl,idlLoaderItf,context)){
+//						IDL subIdl = idlLoaderItf.load(itfDef.getName(), context);
+//						itfWriter.println("#include \"" + SimpleMacroHelper.rmLeadingSlash(PathHelper.fullyQualifiedNameToPath(itfDef.getName(), "itf.h")) + "\"");
+//						idlVisitorItf.visit(subIdl, context);
+//					}
+//					itfWriter.println("/* End includes referenced interface */");
+//				}
+//			} catch (ADLException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//	
+//			
+//			// Propagating the include directive
+//			if (idl instanceof IncludeContainer) {
+//				Include[] includes = ((IncludeContainer)idl).getIncludes();
+//				if ((includes != null) && (includes.length !=0)){
+//					itfWriter.println();
+//					itfWriter.println("/* Begin includes imported from interface */");
+//					for (Include include : includes) {
+//						String incPath = include.getPath();
+//						//Strip the leading annoying / from the include
+//						if (incPath.startsWith("\"")) incPath = "\"" + SimpleMacroHelper.rmLeadingSlash(incPath.substring(1));
+//						itfWriter.println("#include " + incPath );
+//					}
+//					itfWriter.println("/* End includes imported from interface */");
+//					itfWriter.println();
+//				}
+//			}	
+//
+//			// propagating types defined directly in the .itf
+//			if (idl instanceof TypeCollectionContainer) {
+//				for (final Type type : ((TypeCollectionContainer) idl).getTypes()) {
+//					if (type instanceof TypeDefinition)
+//						itfWriter.println("typedef " + SimpleMacroHelper.typeToString(((TypeDefinition)type).getType()) + " " + SimpleMacroHelper.typeToString(type) + ";");
+//				}
+//			}
+//
+//			// define a struct and a typedef for the interface.
+//			if (idl instanceof InterfaceDefinition) {
+//				Method[] meths = ((InterfaceDefinition)idl).getMethods();
+//				if ((meths != null) && (meths.length !=0)){
+//					itfWriter.println();
+//					itfWriter.println("/* Begin interface type definition */");
+//					itfWriter.println("struct " + idl2type(idl) + "_s {");
+//					for (Method meth : meths) {
+//						itfWriter.print("\t" + SimpleMacroHelper.typeToString(meth.getType()) + " (*" + meth.getName() + ")(" );
+//						Parameter[] parameters = meth.getParameters();
+//						SimpleADLDefinitionSourceGenerator.writeCFunctionParameters(parameters,itfWriter);
+//						itfWriter.println(");");
+//					}
+//					itfWriter.println("};" );
+//					itfWriter.println();
+//					itfWriter.println("typedef struct " + idl2type(idl) + "_s " + idl2type(idl) + ";");
+//					itfWriter.println("/* End interface type definition */");
+//					itfWriter.println();
+//				}
+//			}
+//			// Close the interface header file.
+//			SimpleMacroHelper.closeIncludeGuard(idl.getName(), itfWriter);
+//			itfWriter.close();
+//
+//		} catch (FileNotFoundException e) {
+//			logger.info("Somehow calculated file path are wrong this is a BUG  !");
+//			e.printStackTrace();
+//		} catch (UnsupportedEncodingException e1) {
+//			logger.info("ASCII encoding is not supported on your platform !");
+//			e1.printStackTrace();
+//		}
 
 	}
-
+	
 	private boolean regenerate(final File outputFile, final IDL idl,
 			final Map<Object, Object> context) {
 		if (!outputFile.exists()) {
@@ -202,9 +254,9 @@ public class SimpleIDLHeaderCompiler extends AbstractStringTemplateProcessor imp
 				if ("toIncludePath".equals(formatName)) {
 					final String s = o.toString();
 					String path = s.substring(1, s.length() - 1);
-					if (path.endsWith(".idt")) {
-						path += ".hpp";
-					}
+//					if (path.endsWith(".idt")) {
+//						path += ".h";
+//					}
 					if (path.startsWith("/")) {
 						path = path.substring(1);
 					}

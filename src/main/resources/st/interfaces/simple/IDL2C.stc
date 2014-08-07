@@ -90,7 +90,7 @@ struct __component_<itf.name; format="toCName">_vTable {
 >>
 
 interfaceTypeDef(itf) ::= <<
-typedef struct __component_<itf.name; format="toCName">_vTable <itf.name; format="toCName">;
+typedef struct __component_<itf.name; format="toCName">_vTable *<itf.name; format="toCName">;
 >>
 
 methodDef(method, methodName, withThisPtr) ::= <<

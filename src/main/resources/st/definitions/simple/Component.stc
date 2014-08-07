@@ -65,7 +65,8 @@ ComponentDefinitionHeader(definition) ::= <<
 ServerDecls(itf) ::=<<
 #include "<itf.signature; format="nameToPath">.itf.h"
 <itf.astDecorations.("interfaceDefinition").methods:{<methodMethDef(itf=itf, method=it, withThisPtr="false")>;}; separator="\n">
-<itf.signature; format="toCName"> GET_MY_INTERFACE(<itf.name; format="toCName">) = { <itf.astDecorations.("interfaceDefinition").methods:{<methodMethName(itf=itf.name, method=it.name)>}; separator=",">};
+struct __component_<itf.astDecorations.("interfaceDefinition").name; format="toCName">_vTable GET_MY_VTABLE(<itf.name; format="toCName">) = { <itf.astDecorations.("interfaceDefinition").methods:{<methodMethName(itf=itf.name, method=it.name)>}; separator=",">};
+<itf.signature; format="toCName"> GET_MY_INTERFACE(<itf.name; format="toCName">) = &GET_MY_VTABLE(<itf.name; format="toCName">);
 int GET_COLLECTION_SIZE(<itf.name; format="toCName">) = <if (itf.numberOfElement)><itf.numberOfElement><else>1<endif>;
 >>
 
@@ -73,7 +74,8 @@ int GET_COLLECTION_SIZE(<itf.name; format="toCName">) = <if (itf.numberOfElement
 ClientDecls(itf) ::=<<
 #include "<itf.signature; format="nameToPath">.itf.h"
 <itf.astDecorations.("interfaceDefinition").methods:{extern <methodMethDef(itf=itf, method=it, withThisPtr="false")>;}; separator="\n">
-<itf.signature; format="toCName"> GET_MY_INTERFACE(<itf.name; format="toCName">) = { <itf.astDecorations.("interfaceDefinition").methods:{<methodMethName(itf=itf.name, method=it.name)>}; separator=",">};
+struct __component_<itf.astDecorations.("interfaceDefinition").name; format="toCName">_vTable GET_MY_VTABLE(<itf.name; format="toCName">)<if (itf.numberOfElement)>[<itf.numberOfElement>]<endif><if (itf.numberOfElement)><else> = { <itf.astDecorations.("interfaceDefinition").methods:{<methodMethName(itf=itf.name, method=it.name)>}; separator=",">}<endif>;
+<itf.signature; format="toCName"> GET_MY_INTERFACE(<itf.name; format="toCName">)<if (itf.numberOfElement)>[<itf.numberOfElement>]<endif><if (itf.numberOfElement)><else> = &GET_MY_VTABLE(<itf.name; format="toCName">);<endif>;
 int GET_COLLECTION_SIZE(<itf.name; format="toCName">) = <if (itf.numberOfElement)><itf.numberOfElement><else>1<endif>;
 >>
 
@@ -179,6 +181,34 @@ typedef struct __component_<itf.name; format="toCName">_vTable <itf.name; format
 
 
 
+
+expression(expr) ::= <<
+<(constantExpressionTemplateMap.(expr.astDecorations.kind))(expr=expr)>
+>>
+
+
+binaryOpertaionExpr(expr) ::= <<
+<expr.constantExpressions:{(<expression(expr=it)>)};separator=expr.operation>
+>>
+
+unaryOperationExpr(expr) ::= <<
+<expr.operation> (<expression(expr=expr.constantExpression)>)
+>>
+
+castOperationExpr(expr) ::= <<
+((<varDef(type=expr.type, name="")>) <expression(expr=expr.constantExpression)>)
+>>
+
+literalExpr(expr) ::= <<
+<expr.expr>
+>>
+
+constantExpressionTemplateMap ::= [
+  "binaryOperation" : "binaryOpertaionExpr",
+  "unaryOperation" :  "unaryOperationExpr",
+  "castOperation" :   "castOperationExpr",
+  "literal" :         "literalExpr"
+]
 
 
 typedefVarDef(type, name) ::= <<
@@ -334,7 +364,7 @@ AttributeStructures(definition) ::= <<
     <definition.attributes:AttributeDecl(attr=it); separator="\n">
   };
   typedef struct <definition.name;format="toCName">_attributes_s <definition.name;format="toCName">_attributes_t;
-  static <definition.name;format="toCName">_attributes_t ATTRIBUTE_STRUCT_NAME;
+  __MIND_ATTRIBUTE_UNUSED static <definition.name;format="toCName">_attributes_t ATTRIBUTE_STRUCT_NAME;
 <endif>
 <endif>
 >>
@@ -389,13 +419,11 @@ PrivateDecl(definition) ::= <<
 <if (definition.data)>
 <if (definition.data.cCode)>
 /* Start inlined data code */
-static 
 <definition.data.astSource; format="sourceTo#line">
 <definition.data.cCode>
 /* End inlined data code. */
 <elseif (definition.data.path)>
 /* Include data file */
-static 
 #include "<definition.data.path; format="toCPath">"
 <else>
 /* No private data */

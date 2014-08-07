@@ -24,6 +24,7 @@ package org.ow2.mind.adl.simple;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -32,7 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.antlr.stringtemplate.StringTemplate;
 import org.objectweb.fractal.adl.ADLException;
+import org.objectweb.fractal.adl.CompilerError;
 import org.objectweb.fractal.adl.Definition;
 import org.objectweb.fractal.adl.Loader;
 import org.objectweb.fractal.adl.interfaces.Interface;
@@ -40,6 +43,8 @@ import org.objectweb.fractal.adl.interfaces.InterfaceContainer;
 import org.objectweb.fractal.adl.types.TypeInterface;
 import org.objectweb.fractal.adl.util.FractalADLLogManager;
 import org.ow2.mind.PathHelper;
+import org.ow2.mind.SimpleMacroHelper;
+import org.ow2.mind.SourceFileWriter;
 import org.ow2.mind.adl.AbstractSourceGenerator;
 import org.ow2.mind.adl.DefinitionSourceGenerator;
 import org.ow2.mind.adl.FlagExtractor;
@@ -50,6 +55,7 @@ import org.ow2.mind.adl.ast.Data;
 import org.ow2.mind.adl.ast.ImplementationContainer;
 import org.ow2.mind.adl.ast.MindInterface;
 import org.ow2.mind.adl.ast.Source;
+import org.ow2.mind.adl.idl.InterfaceDefinitionDecorationHelper;
 import org.ow2.mind.adl.implementation.ImplementationLocator;
 import org.ow2.mind.compilation.CompilerContextHelper;
 import org.ow2.mind.idl.IDLLoader;
@@ -70,6 +76,7 @@ import org.ow2.mind.idl.ast.TypeDefReference;
 import org.ow2.mind.idl.ast.TypeDefinition;
 import org.ow2.mind.idl.ast.UnionDefinition;
 import org.ow2.mind.idl.ast.UnionReference;
+import org.ow2.mind.io.IOErrors;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -78,7 +85,16 @@ import com.google.inject.name.Named;
 public class SimpleADLDefinitionSourceGenerator extends AbstractSourceGenerator
 implements
 DefinitionSourceGenerator {
-	
+
+
+	/** The name to be used to inject the templateGroupName used by this class. */
+	public static final String    TEMPLATE_NAME    = "SimpleADL";
+
+	/** The default templateGroupName used by this class. */
+	public static final String    DEFAULT_TEMPLATE = "st.definitions.simple.Component";
+
+	protected final static String FILE_EXT         = ".adl.h";
+
 	/**
 	 * Key used for Named Google Guice binding
 	 */
@@ -103,6 +119,41 @@ DefinitionSourceGenerator {
 		super("st.definitions.simple.Component");
 	}
 
+
+	/**
+	 * This utility method allows us to find the method definitions to be used
+	 * for collections optimization, to allow defining function pointers arrays.
+	 * 
+	 * @param definition
+	 * @param context
+	 * @throws ADLException when a server interface signature can't be loaded
+	 */
+	private void decorateInterfacesWithAccordingInterfaceDefinition(
+			final Definition definition, final Map<Object, Object> context)
+					throws ADLException {
+
+		// defensive
+		if (!(definition instanceof InterfaceContainer)) return;
+
+		final InterfaceContainer itfContainer = (InterfaceContainer) definition;
+
+		for (final Interface currItf : itfContainer.getInterfaces()) {
+			if (!(currItf instanceof TypeInterface)) continue;
+			final TypeInterface currTypeItf = (TypeInterface) currItf;
+
+			// load according InterfaceDefinition
+			final IDL currItfIDL = idlLoaderItf.load(currTypeItf.getSignature(),
+					context);
+
+			if (currItfIDL instanceof InterfaceDefinition) {
+				final InterfaceDefinition currItfItfDef = (InterfaceDefinition) currItfIDL;
+
+				// decorate our instance
+				currItf.astSetDecoration("interfaceDefinition", currItfItfDef);
+			}
+		}
+	}
+
 	/**
 	 * Generate headers for a component definition.
 	 * - One header for the definition.
@@ -116,9 +167,28 @@ DefinitionSourceGenerator {
 	 */
 	public void visit(Definition definition, Map<Object, Object> context) {
 		try {
+
+			final File outputFile = outputFileLocatorItf.getCSourceOutputFile(
+					PathHelper.fullyQualifiedNameToPath(definition.getName(), FILE_EXT), context);
+
+			if (regenerate(outputFile, definition, context)) {
+				decorateInterfacesWithAccordingInterfaceDefinition(definition, context);
+				final StringTemplate st = getInstanceOf("ComponentDefinitionHeader");
+				st.setAttribute("definition", definition);
+
+				try {
+					SourceFileWriter.writeToFile(outputFile, st.toString());
+				} catch (final IOException e) {
+					throw new CompilerError(IOErrors.WRITE_ERROR, e,
+							outputFile.getAbsolutePath());
+				}
+			}
+
+
+
 			// The File for the header corresponding to the definition, and a PrintWriter to write in it.
 			final File adlHeaderFile = outputFileLocatorItf.getCSourceOutputFile(
-					PathHelper.fullyQualifiedNameToPath(definition.getName(), "adl.h"), context);
+					PathHelper.fullyQualifiedNameToPath(definition.getName(), "adl.println.h"), context);
 			final PrintWriter adlPrinter=new PrintWriter(adlHeaderFile,"ASCII");
 
 			// The File for the Makefile for this definition, and a PrintWriter to write in it.
@@ -133,7 +203,7 @@ DefinitionSourceGenerator {
 
 			// Head of the adl header.
 			// Include guard, definition name, and common includes.
-			openIncludeGuard(definition.getName(), adlPrinter);
+			SimpleMacroHelper.openIncludeGuard(definition.getName(), adlPrinter);
 			adlPrinter.println("#include \"mindcommon.h\"");
 			adlPrinter.println();
 			adlPrinter.println("#define DEFINITION_NAME " + definition.getName().replace(".", "_"));
@@ -152,11 +222,11 @@ DefinitionSourceGenerator {
 					if (mindItf.getRole().equals(TypeInterface.SERVER_ROLE)) {
 						// Create a header for the interface, and include it.
 						final String headerFileName = itf2h(mindItf, context);
-						
+
 						adlPrinter.println("#include \"" + headerFileName + "\"" );
 						// Variable definition for the interface and its size.
 						//FIXME collection interface, interface method initialization UNDONE.
-						adlPrinter.println(itf2type(mindItf) + " GET_MY_INTERFACE(" + mindItf.getName() + ");");
+						adlPrinter.println(SimpleMacroHelper.itf2type(mindItf) + " GET_MY_INTERFACE(" + mindItf.getName() + ");");
 						adlPrinter.println("int GET_COLLECTION_SIZE(" + mindItf.getName() + ") = " + Math.abs(ASTHelper.getNumberOfElement(mindItf)) +";");
 						// Prototype declaration of the interface methods
 						methDeclare(mindItf, adlPrinter, context);
@@ -173,7 +243,7 @@ DefinitionSourceGenerator {
 						// Create a header for the interface, and include it.
 						final String headerFileName = itf2h(mindItf, context);
 						adlPrinter.println("#include \"" + headerFileName + "\"" );
-						
+
 						// collectionSuffix is filled with array size ([]) if needed or set to empty String
 						String collectionSuffix = mindItf.getCardinality();
 						String numString = mindItf.getNumberOfElement();
@@ -183,7 +253,7 @@ DefinitionSourceGenerator {
 							collectionSuffix = "";
 						}
 						// Variable definition for the interface and its size.
-						adlPrinter.println("extern " + itf2type(mindItf) + " GET_MY_INTERFACE(" + mindItf.getName() + collectionSuffix  + ");");
+						adlPrinter.println("extern " + SimpleMacroHelper.itf2type(mindItf) + " GET_MY_INTERFACE(" + mindItf.getName() + collectionSuffix  + ");");
 						adlPrinter.println("int GET_COLLECTION_SIZE(" + mindItf.getName() + ") = " + Math.abs(ASTHelper.getNumberOfElement(mindItf)) +";");
 						// Prototype declaration of the interface methods.
 						methDeclare(mindItf, adlPrinter, context);
@@ -191,6 +261,17 @@ DefinitionSourceGenerator {
 				}
 				adlPrinter.println("/* End client interface listing */");
 			}
+
+			//TODO check @UseIDL
+			//			adlPrinter.println();
+			//			adlPrinter.println("/* Begin @UseIdl interface listing */");
+			//			for (InterfaceDefinition itfDef : InterfaceDefinitionDecorationHelper.getUsedInterfaceDefinitions(definition,idlLoaderItf,context)){
+			//				IDL subIdl = idlLoaderItf.load(itfDef.getName(), context);
+			//				adlPrinter.println("#include \"" + SimpleMacroHelper.rmLeadingSlash(PathHelper.fullyQualifiedNameToPath(itfDef.getName(), "itf.h")) + "\"");
+			//				writeItfHeader(subIdl, context);
+			//			}
+			//			adlPrinter.println("/* End @UseIdl interface listing */");
+			//			adlPrinter.println();
 
 			// data and source are both gotten form ImplementationContainer.
 			if (definition instanceof ImplementationContainer) {
@@ -208,7 +289,7 @@ DefinitionSourceGenerator {
 					// If the data are in a separate file.
 					final String fileData = data.getPath();
 					if (fileData != null ) {
-						adlPrinter.println("#include \"" + fileData.substring(1) + "\"");
+						adlPrinter.println("#include \"" + SimpleMacroHelper.rmLeadingSlash(fileData) + "\"");
 					}
 					// FIXME What about if data is used both as inlined and separate file ? Doesn't make sense but ...
 					adlPrinter.println("/* Begin private data declaration */");
@@ -228,16 +309,16 @@ DefinitionSourceGenerator {
 						PrintWriter srcPrinter = new PrintWriter(headerFile,"ASCII");
 
 						// source header file only include the adl header, guarded against multiple inclusion.
-						openIncludeGuard(headerFile.toPath().toString().replace("/","_"), srcPrinter);
-						srcPrinter.println("#include \"" + PathHelper.fullyQualifiedNameToPath(definition.getName(), "adl.h").substring(1) + "\"");
-						closeIncludeGuard(headerFile.toPath().toString().replace("/","_"), srcPrinter);
+						SimpleMacroHelper.openIncludeGuard(headerFile.toPath().toString().replace("/","_"), srcPrinter);
+						srcPrinter.println("#include \"" + SimpleMacroHelper.rmLeadingSlash(PathHelper.fullyQualifiedNameToPath(definition.getName(), "adl.h")) + "\"");
+						SimpleMacroHelper.closeIncludeGuard(headerFile.toPath().toString().replace("/","_"), srcPrinter);
 						srcPrinter.close();
 
 						// Begin a compilation rule in the Make file for the source, with generated header passed as pre-included file.
 						try {
-							makePrinter.print("\t$(CC) -c " + (new File(srcURL.toURI())).getPath() + " -include " + hSrc.substring(1) );
+							makePrinter.print("\t$(CC) -c " + (new File(srcURL.toURI())).getPath() + " -include " + SimpleMacroHelper.rmLeadingSlash(hSrc) );
 						} catch (URISyntaxException e) {
-							makePrinter.print("\t$(CC) -c " + srcURL.getPath() + " -include " + hSrc.substring(1) );
+							makePrinter.print("\t$(CC) -c " + srcURL.getPath() + " -include " + SimpleMacroHelper.rmLeadingSlash(hSrc) );
 						}
 						// Append the project wise compilation flags
 						for (final String inc : CompilerContextHelper.getIncPath(context)) {
@@ -299,21 +380,21 @@ DefinitionSourceGenerator {
 					// Create a struct, a typedef and a variable to hold the attributes.
 					adlPrinter.println();
 					adlPrinter.println("/* Begin attributes declaration */");
-					adlPrinter.println("struct " + def2type(definition) +"_attribue_s {");
+					adlPrinter.println("struct " + SimpleMacroHelper.def2type(definition) +"_attribue_s {");
 					for (Attribute attribute : attributes) {
 						adlPrinter.println(attribute.getType() + " " + attribute.getName() + ";");
 						//FIXME no initialization is done.
 					}
 					adlPrinter.println("};");
-					adlPrinter.println("typedef struct " +  def2type(definition) +"_attribue_s " + def2type(definition) +"_attribue_t;");
-					adlPrinter.println("static " + def2type(definition) +"_attribue_t ATTRIBUTE_STRUCT_NAME;");
+					adlPrinter.println("typedef struct " +  SimpleMacroHelper.def2type(definition) +"_attribue_s " + SimpleMacroHelper.def2type(definition) +"_attribue_t;");
+					adlPrinter.println("static " + SimpleMacroHelper.def2type(definition) +"_attribue_t ATTRIBUTE_STRUCT_NAME;");
 					adlPrinter.println("/* End attributes declaration */");
 					adlPrinter.println();
 				}
 			}
 
 			// Closing the adl header and Makefile.
-			closeIncludeGuard(definition.getName(),adlPrinter);
+			SimpleMacroHelper.closeIncludeGuard(definition.getName(),adlPrinter);
 			adlPrinter.close();
 			makePrinter.close();
 		} catch (FileNotFoundException e) {
@@ -322,6 +403,9 @@ DefinitionSourceGenerator {
 		} catch (UnsupportedEncodingException e) {
 			logger.info("ASCII encoding is not supported on your platform !");
 			e.printStackTrace();
+		} catch (ADLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 	}
 
@@ -362,7 +446,7 @@ DefinitionSourceGenerator {
 					writer.println("/* Begin METH declaration */");
 					// Mangling is left out for the C preprocessor 
 					for (Method meth : meths) {
-						writer.print(typeToString(meth.getType()) + " METH(" + itf.getName() + ", " + meth.getName() + ")(" );
+						writer.print(SimpleMacroHelper.typeToString(meth.getType()) + " METH(" + itf.getName() + ", " + meth.getName() + ")(" );
 						Parameter[] parameters = meth.getParameters();
 						writeCFunctionParameters(parameters,writer);
 						writer.println(");");
@@ -388,86 +472,11 @@ DefinitionSourceGenerator {
 		String paramDelimiter = " ";
 		if ((parameters != null) && (parameters.length != 0)) {
 			for (Parameter parameter : parameters) {
-				writer.print(paramDelimiter + typeToString(parameter.getType()) + " " + parameter.getName());
+				writer.print(paramDelimiter + SimpleMacroHelper.typeToString(parameter.getType()) + " " + parameter.getName());
 				paramDelimiter = ", ";
 			}
 		} else {
 			writer.print("void");
 		}
 	}
-
-	/**
-	 * get a C type from an interface instance. 
-	 * @param itf The interface.
-	 * @return The C type name.
-	 */
-	public static String itf2type(MindInterface itf) {
-		return itf.getSignature().replace(".", "_");
-	}
-
-	/**
-	 * get a C type from a definition. 
-	 * @param def The definition.
-	 * @return The C type name.
-	 */
-	private String def2type(Definition def) {
-		return def.getName().replace(".", "_");
-	}
-
-	/**
-	 * Typical C include guard header from fully qualified like Strings
-	 * @param name The fully qualified name of the element to guard.
-	 * @param writer The PrintWriter to write in.
-	 */
-	public static void openIncludeGuard(String name, PrintWriter writer) {
-		final String macroName = name.replace(".", "_").toUpperCase();
-		writer.println("#ifndef " + macroName);
-		writer.println("#define " + macroName);
-		writer.println();
-	}
-
-	/**
-	 * Typical C include guard footer from fully qualified like Strings
-	 * @param name The fully qualified name of the element to guard.
-	 * @param writer The PrintWriter to write in.
-	 */
-	public static void closeIncludeGuard(String name, PrintWriter writer) {
-		final String macroName = name.replace(".", "_").toUpperCase();
-		writer.println();
-		writer.println("#endif /* " + macroName + " */");
-		writer.println();
-	}
-
-	/**
-	 * Shamelessly copied from OptimCPLChecker
-	 */
-	public static String typeToString(Type type) {
-		if (type instanceof EnumDefinition) {
-			return ((EnumDefinition) type).getName();
-		} else if (type instanceof EnumReference) {
-			return ((EnumReference) type).getName();
-		} else if (type instanceof StructDefinition) {
-			return ((StructDefinition) type).getName();
-		} else if (type instanceof StructReference) {
-			return ((StructReference) type).getName();
-		} else if (type instanceof UnionDefinition) {
-			return ((UnionDefinition) type).getName();
-		} else if (type instanceof UnionReference) {
-			return ((UnionReference) type).getName();
-		} else if (type instanceof TypeDefinition) {
-			return ((TypeDefinition) type).getName();
-		} else if (type instanceof TypeDefReference) {
-			return ((TypeDefReference) type).getName();
-		} else if (type instanceof ConstantDefinition) {
-			return ((ConstantDefinition) type).getName();
-		} else if (type instanceof PrimitiveType) {
-			return ((PrimitiveType) type).getName();
-		} else if (type instanceof ArrayOf) {
-			// TODO:see IDL2C.stc arrayOfVarName for cleaner handling
-			return typeToString(((ArrayOf) type).getType()) + " * "; 
-		} else if (type instanceof PointerOf) {
-			return typeToString(((PointerOf) type).getType()) + " * ";
-		} else return ""; // TODO: check even if this should never happen, or raise an error
-	}
-
 }

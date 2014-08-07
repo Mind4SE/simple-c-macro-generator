@@ -1,23 +1,8 @@
-/**
- * Copyright (C) 2014 Schneider Electric
+/*
+ * commonMacro.h
  *
- * This file is part of "Mind Compiler" is free software: you can redistribute
- * it and/or modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
- * details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Contact: mind@ow2.org
- *
- * Authors: Julien TOUS
- * Contributors: Stephane SEYVOZ
+ *  Created on: 17 juil. 2014
+ *      Author: sesa206922
  */
 
 #ifndef COMMONMACRO_H_
@@ -30,7 +15,7 @@
 #define CALL(...) CALL_NUM_ARGS_IMPL(__VA_ARGS__, 2,1)(__VA_ARGS__)
 #define CALL_NUM_ARGS_IMPL(_1,_2,N,...) CALL##N
 #define CALL1(METH_NAME) PREMANGLE1(METH_NAME)
-#define CALL2(METH_NAME,METH_NAME) GET_MY_INTERFACE(ITF_NAME).METH_NAME
+#define CALL2(ITF_NAME,METH_NAME) GET_MY_INTERFACE(ITF_NAME)->METH_NAME
 
 /* Introduce Definition name */
 #define PREMANGLE2(ITF_NAME,METH_NAME) MANGLE3_HELPER( DEFINITION_NAME , ITF_NAME, METH_NAME)
@@ -75,6 +60,12 @@
 #define GET_MY_INTERFACE_HELPER_HELPER(DEF_NAME,ITF_NAME) GET_MY_INTERFACE_HELPER(DEF_NAME, ITF_NAME)
 #define GET_MY_INTERFACE_HELPER(DEF_NAME, ITF_NAME) _component_##DEF_NAME##_interface_##ITF_NAME
 
+#define GET_MY_VTABLE(ITF_NAME) GET_MY_VTABLE_HELPER_HELPER(DEFINITION_NAME,ITF_NAME)
+#define GET_MY_VTABLE_HELPER_HELPER(DEF_NAME,ITF_NAME) GET_MY_VTABLE_HELPER(DEF_NAME, ITF_NAME)
+#define GET_MY_VTABLE_HELPER(DEF_NAME, ITF_NAME) _component_##DEF_NAME##_interface_##ITF_NAME##_s
+
+#define BIND_MY_INTERFACE(MY_ITF, OTHER_ITF) (GET_MY_INTERFACE(MY_ITF) = OTHER_ITF)
+
 #define IS_BOUND_PTR(ITF_PTR_NAME) (ITF_PTR_NAME!=0)
 
 
@@ -86,5 +77,7 @@
 #define CALL_PTR1(METH_NAME) METH_NAME
 #define METH_PTR(METH_PTR_NAME) METH_PTR_NAME
 
+#define PRIVATE_DATA_T __MIND_ATTRIBUTE_UNUSED void
+static PRIVATE_DATA_T* _mind_this;
 
 #endif /* COMMONMACRO_H_ */
