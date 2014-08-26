@@ -1,0 +1,30 @@
+
+interface common.BasicTypes {
+	//basic
+	void v( void );
+	char c ( char);
+	short s (short);
+	int i ( int );
+	float _f (float);
+	double _d (double);
+	void many (char,short,int,long);
+	
+	//unsigned
+	unsigned char uc ( unsigned char);
+	unsigned short us (unsigned short);
+	unsigned int ui ( unsigned int );
+
+	//pointers
+	int* pi ( int *);
+	int** ppi ( int **);
+		
+    //table
+    int ti (int []);		
+	int tti (int [][10]);		
+		
+	//constant		
+	int ci (const int);
+	
+	//mixing
+	void mix ( int * const, const unsigned long *, char * [], short * const [], const long ** const ** const [	][9][3]);
+}

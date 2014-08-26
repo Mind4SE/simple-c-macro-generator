@@ -1,0 +1,4 @@
+primitive common.BasicTypeServer {
+	provides BasicTypes as basicTypesItf; 	
+	source BasicTypeServer.c;
+}
