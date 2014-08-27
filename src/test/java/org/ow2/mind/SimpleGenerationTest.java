@@ -23,6 +23,7 @@
 package org.ow2.mind;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -33,21 +34,22 @@ import java.util.logging.Logger;
 import org.objectweb.fractal.adl.Definition;
 import org.objectweb.fractal.adl.util.FractalADLLogManager;
 import org.ow2.mind.AbstractSimpleGenerationTest;
-import org.ow2.mind.adl.annotation.predefined.Compile;
 import org.ow2.mind.adl.annotation.predefined.Run;
 import org.ow2.mind.annotation.AnnotationHelper;
-import org.ow2.mind.unit.UnitTestDataProvider;
-import org.testng.annotations.DataProvider;
+import org.ow2.mind.io.OutputFileLocator;
 import org.testng.annotations.Test;
 
 public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 
+	private static final String ADL_EXT = ".adl.h";
+	private static final String ITF_EXT = ".itf.h";
+	private static final String MAKE_EXT = ".make";
 	protected static Logger logger = FractalADLLogManager.getLogger("simple-generation-test");
 
 	@Override
 	protected void initPath() {
 		initSourcePath(getDepsDir("fractal/api/Component.itf").getAbsolutePath(),
-				"common", SIMPLE_GENERATION_ROOT);
+				"src");
 	}
 
 
@@ -89,28 +91,37 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 	/**
 	 * The most basic test.
 	 */
-	@Test(groups = {SIMPLE_GENERATION_ROOT})
+	@Test(groups = {"simpleGeneration"})
 	public void basicHelloworldTest()
 			throws Exception {
-		initSourcePath(getDepsDir("fractal/api/Component.itf").getAbsolutePath(),
-				"common", SIMPLE_GENERATION_ROOT);
-
+		
+		initPath();
+		
 		initContext(true);
-		String adlName = "helloworld.Helloworld";
+		String adlName = "common.BasicTypeServer";
 
+		List<String> flags = new ArrayList<String>();
+		
 		final Definition d = runner.load(adlName);
 		final Run runAnno = AnnotationHelper.getAnnotation(d, Run.class);
 		if (runAnno != null) {
-			//runner.addCFlags(flags);
+			runner.addCFlags(flags);
 
-			final String adl;
-			adl = (runAnno.addBootstrap)
-					? "GenericApplication" + "SBr" + "<" + adlName + ">"
-							: adlName;
+			runner.compile(adlName, runAnno.executableName);
 
-			File exeFile = runner.compile(adl, runAnno.executableName);
-			final int r = runner.run(exeFile, (String[]) null);
+			// Testing .adl.h file existence.
+			File adlOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(adlName, ADL_EXT), runner.context);
+			assertTrue(adlOutputFile.exists());
 
+			// Testing .itf.h existence.
+			File itfOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath("common.BasicTypes",ITF_EXT), runner.context);
+			assertTrue(itfOutputFile.exists());
+			
+			// Testing .make existence.
+			File makeOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(adlName, MAKE_EXT), runner.context);
+			assertTrue(makeOutputFile.exists());
+			
+			final int r = Runtime.getRuntime().exec("make -f" + makeOutputFile.getAbsolutePath()).waitFor();
 			assertEquals(r, 0, "Unexpected return value");
 
 		} else {

@@ -12,7 +12,7 @@ public abstract class AbstractSimpleGenerationTest extends AbstractFunctionalTes
 	protected static final String SIMPLE_GENERATION_ROOT = "simpleGeneration";
 	
 	protected static File         buildDir = new File(
-			"target/build/functional-optimizations-test");
+			"target/build/simple-generation-test");
 
 	protected void initContext(final boolean force) throws ADLException {
 		// delete previous temporary directory.

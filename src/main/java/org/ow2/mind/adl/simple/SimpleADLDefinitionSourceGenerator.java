@@ -48,34 +48,34 @@ import org.ow2.mind.SourceFileWriter;
 import org.ow2.mind.adl.AbstractSourceGenerator;
 import org.ow2.mind.adl.DefinitionSourceGenerator;
 import org.ow2.mind.adl.FlagExtractor;
-import org.ow2.mind.adl.ast.ASTHelper;
-import org.ow2.mind.adl.ast.Attribute;
-import org.ow2.mind.adl.ast.AttributeContainer;
-import org.ow2.mind.adl.ast.Data;
+//import org.ow2.mind.adl.ast.ASTHelper;
+//import org.ow2.mind.adl.ast.Attribute;
+//import org.ow2.mind.adl.ast.AttributeContainer;
+//import org.ow2.mind.adl.ast.Data;
 import org.ow2.mind.adl.ast.ImplementationContainer;
-import org.ow2.mind.adl.ast.MindInterface;
+//import org.ow2.mind.adl.ast.MindInterface;
 import org.ow2.mind.adl.ast.Source;
-import org.ow2.mind.adl.idl.InterfaceDefinitionDecorationHelper;
+//import org.ow2.mind.adl.idl.InterfaceDefinitionDecorationHelper;
 import org.ow2.mind.adl.implementation.ImplementationLocator;
 import org.ow2.mind.compilation.CompilerContextHelper;
 import org.ow2.mind.idl.IDLLoader;
-import org.ow2.mind.idl.ast.ArrayOf;
-import org.ow2.mind.idl.ast.ConstantDefinition;
-import org.ow2.mind.idl.ast.EnumDefinition;
-import org.ow2.mind.idl.ast.EnumReference;
+//import org.ow2.mind.idl.ast.ArrayOf;
+//import org.ow2.mind.idl.ast.ConstantDefinition;
+//import org.ow2.mind.idl.ast.EnumDefinition;
+//import org.ow2.mind.idl.ast.EnumReference;
 import org.ow2.mind.idl.ast.IDL;
 import org.ow2.mind.idl.ast.InterfaceDefinition;
-import org.ow2.mind.idl.ast.Method;
-import org.ow2.mind.idl.ast.Parameter;
-import org.ow2.mind.idl.ast.PointerOf;
-import org.ow2.mind.idl.ast.PrimitiveType;
-import org.ow2.mind.idl.ast.StructDefinition;
-import org.ow2.mind.idl.ast.StructReference;
-import org.ow2.mind.idl.ast.Type;
-import org.ow2.mind.idl.ast.TypeDefReference;
-import org.ow2.mind.idl.ast.TypeDefinition;
-import org.ow2.mind.idl.ast.UnionDefinition;
-import org.ow2.mind.idl.ast.UnionReference;
+//import org.ow2.mind.idl.ast.Method;
+//import org.ow2.mind.idl.ast.Parameter;
+//import org.ow2.mind.idl.ast.PointerOf;
+//import org.ow2.mind.idl.ast.PrimitiveType;
+//import org.ow2.mind.idl.ast.StructDefinition;
+//import org.ow2.mind.idl.ast.StructReference;
+//import org.ow2.mind.idl.ast.Type;
+//import org.ow2.mind.idl.ast.TypeDefReference;
+//import org.ow2.mind.idl.ast.TypeDefinition;
+//import org.ow2.mind.idl.ast.UnionDefinition;
+//import org.ow2.mind.idl.ast.UnionReference;
 import org.ow2.mind.io.IOErrors;
 
 import com.google.inject.Inject;
@@ -186,10 +186,10 @@ DefinitionSourceGenerator {
 
 
 
-			// The File for the header corresponding to the definition, and a PrintWriter to write in it.
-			final File adlHeaderFile = outputFileLocatorItf.getCSourceOutputFile(
-					PathHelper.fullyQualifiedNameToPath(definition.getName(), "adl.println.h"), context);
-			final PrintWriter adlPrinter=new PrintWriter(adlHeaderFile,"ASCII");
+//			// The File for the header corresponding to the definition, and a PrintWriter to write in it.
+//			final File adlHeaderFile = outputFileLocatorItf.getCSourceOutputFile(
+//					PathHelper.fullyQualifiedNameToPath(definition.getName(), "adl.println.h"), context);
+//			final PrintWriter adlPrinter=new PrintWriter(adlHeaderFile,"ASCII");
 
 			// The File for the Makefile for this definition, and a PrintWriter to write in it.
 			final File makeFile = outputFileLocatorItf.getCSourceOutputFile(
@@ -201,66 +201,66 @@ DefinitionSourceGenerator {
 			makePrinter.println("all : " + definition.getName());
 			makePrinter.println( definition.getName() + " : ");
 
-			// Head of the adl header.
-			// Include guard, definition name, and common includes.
-			SimpleMacroHelper.openIncludeGuard(definition.getName(), adlPrinter);
-			adlPrinter.println("#include \"mindcommon.h\"");
-			adlPrinter.println();
-			adlPrinter.println("#define DEFINITION_NAME " + definition.getName().replace(".", "_"));
-			adlPrinter.println();
-			adlPrinter.println("#include \"commonMacro.h\"");
-			adlPrinter.println();
+//			// Head of the adl header.
+//			// Include guard, definition name, and common includes.
+//			SimpleMacroHelper.openIncludeGuard(definition.getName(), adlPrinter);
+//			adlPrinter.println("#include \"mindcommon.h\"");
+//			adlPrinter.println();
+//			adlPrinter.println("#define DEFINITION_NAME " + definition.getName().replace(".", "_"));
+//			adlPrinter.println();
+//			adlPrinter.println("#include \"commonMacro.h\"");
+//			adlPrinter.println();
 
 			// Interfaces actions.
 			if (definition instanceof InterfaceContainer) {
-				Interface[] interfaces = ((InterfaceContainer) definition).getInterfaces();
+//				Interface[] interfaces = ((InterfaceContainer) definition).getInterfaces();
 
 				// Server interfaces.
-				adlPrinter.println("/* Begin server interface listing */");
-				for (Interface itf : interfaces) {
-					MindInterface mindItf = (MindInterface) itf;
-					if (mindItf.getRole().equals(TypeInterface.SERVER_ROLE)) {
-						// Create a header for the interface, and include it.
-						final String headerFileName = itf2h(mindItf, context);
+//				adlPrinter.println("/* Begin server interface listing */");
+//				for (Interface itf : interfaces) {
+//					MindInterface mindItf = (MindInterface) itf;
+//					if (mindItf.getRole().equals(TypeInterface.SERVER_ROLE)) {
+//						// Create a header for the interface, and include it.
+//						final String headerFileName = itf2h(mindItf, context);
+//
+//						adlPrinter.println("#include \"" + headerFileName + "\"" );
+//						// Variable definition for the interface and its size.
+//						//FIXME collection interface, interface method initialization UNDONE.
+//						adlPrinter.println(SimpleMacroHelper.itf2type(mindItf) + " GET_MY_INTERFACE(" + mindItf.getName() + ");");
+//						adlPrinter.println("int GET_COLLECTION_SIZE(" + mindItf.getName() + ") = " + Math.abs(ASTHelper.getNumberOfElement(mindItf)) +";");
+//						// Prototype declaration of the interface methods
+//						methDeclare(mindItf, adlPrinter, context);
+//					}
+//				}
+//				adlPrinter.println("/* End server interface listing */");
+//				adlPrinter.println();
 
-						adlPrinter.println("#include \"" + headerFileName + "\"" );
-						// Variable definition for the interface and its size.
-						//FIXME collection interface, interface method initialization UNDONE.
-						adlPrinter.println(SimpleMacroHelper.itf2type(mindItf) + " GET_MY_INTERFACE(" + mindItf.getName() + ");");
-						adlPrinter.println("int GET_COLLECTION_SIZE(" + mindItf.getName() + ") = " + Math.abs(ASTHelper.getNumberOfElement(mindItf)) +";");
-						// Prototype declaration of the interface methods
-						methDeclare(mindItf, adlPrinter, context);
-					}
-				}
-				adlPrinter.println("/* End server interface listing */");
-				adlPrinter.println();
-
-				// Client interfaces.
-				adlPrinter.println("/* Begin client interface listing */");
-				for (Interface itf : interfaces) {	
-					MindInterface mindItf = (MindInterface) itf;
-					if (mindItf.getRole().equals(TypeInterface.CLIENT_ROLE)) {
-						// Create a header for the interface, and include it.
-						final String headerFileName = itf2h(mindItf, context);
-						adlPrinter.println("#include \"" + headerFileName + "\"" );
-
-						// collectionSuffix is filled with array size ([]) if needed or set to empty String
-						String collectionSuffix = mindItf.getCardinality();
-						String numString = mindItf.getNumberOfElement();
-						if ((numString !=null)&&(collectionSuffix.equals("collection"))) {
-							collectionSuffix = "[" + numString + "]"; 
-						} else {
-							collectionSuffix = "";
-						}
-						// Variable definition for the interface and its size.
-						adlPrinter.println("extern " + SimpleMacroHelper.itf2type(mindItf) + " GET_MY_INTERFACE(" + mindItf.getName() + collectionSuffix  + ");");
-						adlPrinter.println("int GET_COLLECTION_SIZE(" + mindItf.getName() + ") = " + Math.abs(ASTHelper.getNumberOfElement(mindItf)) +";");
-						// Prototype declaration of the interface methods.
-						methDeclare(mindItf, adlPrinter, context);
-					}
-				}
-				adlPrinter.println("/* End client interface listing */");
-			}
+//				// Client interfaces.
+//				adlPrinter.println("/* Begin client interface listing */");
+//				for (Interface itf : interfaces) {	
+//					MindInterface mindItf = (MindInterface) itf;
+//					if (mindItf.getRole().equals(TypeInterface.CLIENT_ROLE)) {
+//						// Create a header for the interface, and include it.
+//						final String headerFileName = itf2h(mindItf, context);
+//						adlPrinter.println("#include \"" + headerFileName + "\"" );
+//
+//						// collectionSuffix is filled with array size ([]) if needed or set to empty String
+//						String collectionSuffix = mindItf.getCardinality();
+//						String numString = mindItf.getNumberOfElement();
+//						if ((numString !=null)&&(collectionSuffix.equals("collection"))) {
+//							collectionSuffix = "[" + numString + "]"; 
+//						} else {
+//							collectionSuffix = "";
+//						}
+//						// Variable definition for the interface and its size.
+//						adlPrinter.println("extern " + SimpleMacroHelper.itf2type(mindItf) + " GET_MY_INTERFACE(" + mindItf.getName() + collectionSuffix  + ");");
+//						adlPrinter.println("int GET_COLLECTION_SIZE(" + mindItf.getName() + ") = " + Math.abs(ASTHelper.getNumberOfElement(mindItf)) +";");
+//						// Prototype declaration of the interface methods.
+//						methDeclare(mindItf, adlPrinter, context);
+//					}
+//				}
+//				adlPrinter.println("/* End client interface listing */");
+//			}
 
 			//TODO check @UseIDL
 			//			adlPrinter.println();
@@ -273,47 +273,52 @@ DefinitionSourceGenerator {
 			//			adlPrinter.println("/* End @UseIdl interface listing */");
 			//			adlPrinter.println();
 
-			// data and source are both gotten form ImplementationContainer.
-			if (definition instanceof ImplementationContainer) {
-				// data actions
-				Data data = ((ImplementationContainer)definition).getData();
-				if (data != null) {
-					adlPrinter.println();
-					adlPrinter.println("/* Begin private data declaration */");
-					adlPrinter.println("static ");
-					// If the data are inlined.
-					final String inlinedData = data.getCCode();
-					if (inlinedData != null ) {
-						adlPrinter.println(inlinedData);
-					}
-					// If the data are in a separate file.
-					final String fileData = data.getPath();
-					if (fileData != null ) {
-						adlPrinter.println("#include \"" + SimpleMacroHelper.rmLeadingSlash(fileData) + "\"");
-					}
-					// FIXME What about if data is used both as inlined and separate file ? Doesn't make sense but ...
-					adlPrinter.println("/* Begin private data declaration */");
-					adlPrinter.println();
-				}
+//			// data and source are both gotten form ImplementationContainer.
+//			if (definition instanceof ImplementationContainer) {
+//				// data actions
+//				Data data = ((ImplementationContainer)definition).getData();
+//				if (data != null) {
+//					adlPrinter.println();
+//					adlPrinter.println("/* Begin private data declaration */");
+//					adlPrinter.println("static ");
+//					// If the data are inlined.
+//					final String inlinedData = data.getCCode();
+//					if (inlinedData != null ) {
+//						adlPrinter.println(inlinedData);
+//					}
+//					// If the data are in a separate file.
+//					final String fileData = data.getPath();
+//					if (fileData != null ) {
+//						adlPrinter.println("#include \"" + SimpleMacroHelper.rmLeadingSlash(fileData) + "\"");
+//					}
+//					// FIXME What about if data is used both as inlined and separate file ? Doesn't make sense but ...
+//					adlPrinter.println("/* Begin private data declaration */");
+//					adlPrinter.println();
+//				}
 
-				// source actions
+//				// source actions
 				Source[] sources = ((ImplementationContainer)definition).getSources();
 				if ((sources != null) && (sources.length != 0)) {
 					for (Source source : sources) {
+						
+						
 						// Calculate a .h file from the source file and a PrintWriter to write in it.
 						String cSrc = source.getPath();
 						int index = cSrc.lastIndexOf(".");
-						String hSrc = cSrc.substring(0, index)+".impl.h";
+						String hSrc = cSrc.substring(0, index)+".c.h";
 						final URL srcURL = implementationLocatorItf.findSource(cSrc, context);
 						final File headerFile = outputFileLocatorItf.getCSourceOutputFile( hSrc, context);
 						PrintWriter srcPrinter = new PrintWriter(headerFile,"ASCII");
 
 						// source header file only include the adl header, guarded against multiple inclusion.
-						SimpleMacroHelper.openIncludeGuard(headerFile.toPath().toString().replace("/","_"), srcPrinter);
+						SimpleMacroHelper.openIncludeGuard(hSrc.replace("/","_"), srcPrinter);
 						srcPrinter.println("#include \"" + SimpleMacroHelper.rmLeadingSlash(PathHelper.fullyQualifiedNameToPath(definition.getName(), "adl.h")) + "\"");
-						SimpleMacroHelper.closeIncludeGuard(headerFile.toPath().toString().replace("/","_"), srcPrinter);
+						SimpleMacroHelper.closeIncludeGuard(hSrc.replace("/","_"), srcPrinter);
 						srcPrinter.close();
 
+						
+						
+						
 						// Begin a compilation rule in the Make file for the source, with generated header passed as pre-included file.
 						try {
 							makePrinter.print("\t$(CC) -c " + (new File(srcURL.toURI())).getPath() + " -include " + SimpleMacroHelper.rmLeadingSlash(hSrc) );
@@ -373,29 +378,29 @@ DefinitionSourceGenerator {
 				}
 			}
 
-			// attribute actions
-			if (definition instanceof AttributeContainer) {
-				Attribute[] attributes = ((AttributeContainer)definition).getAttributes();
-				if ((attributes != null) && (attributes.length != 0)) {
-					// Create a struct, a typedef and a variable to hold the attributes.
-					adlPrinter.println();
-					adlPrinter.println("/* Begin attributes declaration */");
-					adlPrinter.println("struct " + SimpleMacroHelper.def2type(definition) +"_attribue_s {");
-					for (Attribute attribute : attributes) {
-						adlPrinter.println(attribute.getType() + " " + attribute.getName() + ";");
-						//FIXME no initialization is done.
-					}
-					adlPrinter.println("};");
-					adlPrinter.println("typedef struct " +  SimpleMacroHelper.def2type(definition) +"_attribue_s " + SimpleMacroHelper.def2type(definition) +"_attribue_t;");
-					adlPrinter.println("static " + SimpleMacroHelper.def2type(definition) +"_attribue_t ATTRIBUTE_STRUCT_NAME;");
-					adlPrinter.println("/* End attributes declaration */");
-					adlPrinter.println();
-				}
-			}
-
-			// Closing the adl header and Makefile.
-			SimpleMacroHelper.closeIncludeGuard(definition.getName(),adlPrinter);
-			adlPrinter.close();
+//			// attribute actions
+//			if (definition instanceof AttributeContainer) {
+//				Attribute[] attributes = ((AttributeContainer)definition).getAttributes();
+//				if ((attributes != null) && (attributes.length != 0)) {
+//					// Create a struct, a typedef and a variable to hold the attributes.
+//					adlPrinter.println();
+//					adlPrinter.println("/* Begin attributes declaration */");
+//					adlPrinter.println("struct " + SimpleMacroHelper.def2type(definition) +"_attribue_s {");
+//					for (Attribute attribute : attributes) {
+//						adlPrinter.println(attribute.getType() + " " + attribute.getName() + ";");
+//						//FIXME no initialization is done.
+//					}
+//					adlPrinter.println("};");
+//					adlPrinter.println("typedef struct " +  SimpleMacroHelper.def2type(definition) +"_attribue_s " + SimpleMacroHelper.def2type(definition) +"_attribue_t;");
+//					adlPrinter.println("static " + SimpleMacroHelper.def2type(definition) +"_attribue_t ATTRIBUTE_STRUCT_NAME;");
+//					adlPrinter.println("/* End attributes declaration */");
+//					adlPrinter.println();
+//				}
+//			}
+//
+//			// Closing the adl header and Makefile.
+//			SimpleMacroHelper.closeIncludeGuard(definition.getName(),adlPrinter);
+//			adlPrinter.close();
 			makePrinter.close();
 		} catch (FileNotFoundException e) {
 			logger.info("Somehow calculated file path are wrong this is a BUG  !");
@@ -409,74 +414,80 @@ DefinitionSourceGenerator {
 		}
 	}
 
-	/**
-	 * Generate a Path-like string for an header file to be generated from an interface. 
-	 * @param itf The interface to use as reference.
-	 * @return The Path-like string of the header file.
-	 */
-	private String itf2h(MindInterface itf, Map<Object, Object> context){
-		String headerFileName = null;
-		try {
-			IDL idl = idlLoaderItf.load(itf.getSignature(), context);
-			if (idl.getName().startsWith("/")) { //FIXME : Why this really needed ???
-				headerFileName = PathHelper.replaceExtension(idl.getName(), ".itf.h");
-			} else {
-				headerFileName = PathHelper.fullyQualifiedNameToPath(idl.getName(), ".itf.h");		
-			}
-		} catch (ADLException e) {
-			logger.info("interface " + itf.getName() + " cannot be loaded !");
-			e.printStackTrace();
-		}
-		return headerFileName.substring(1);
+
+	private void createSourceHeader(Source source) {
+		// TODO Auto-generated method stub
+		
 	}
 
-	/**
-	 * Create prototypes of the methods of an interface.
-	 * @param itf The interface to be prototyped.
-	 * @param writer The PrintWriter where to put write the prototypes. 
-	 * @param context The global compilation context.
-	 */
-	private void methDeclare(MindInterface itf, PrintWriter writer, Map<Object, Object> context) {
-		try {
-			IDL idl = idlLoaderItf.load(itf.getSignature(), context);
-			if (idl instanceof InterfaceDefinition) {
-				Method[] meths = ((InterfaceDefinition)idl).getMethods();
-				if ((meths != null) && (meths.length !=0)){
-					writer.println();
-					writer.println("/* Begin METH declaration */");
-					// Mangling is left out for the C preprocessor 
-					for (Method meth : meths) {
-						writer.print(SimpleMacroHelper.typeToString(meth.getType()) + " METH(" + itf.getName() + ", " + meth.getName() + ")(" );
-						Parameter[] parameters = meth.getParameters();
-						writeCFunctionParameters(parameters,writer);
-						writer.println(");");
-					}
-					writer.println("/* End  METH declaration */");
-					writer.println();
-				}
-			}
-		} catch (ADLException e) {
-			logger.info("Interface cannot be resolved to a IDL !");
-			e.printStackTrace();
-		}
-	}
+//	/**
+//	 * Generate a Path-like string for an header file to be generated from an interface. 
+//	 * @param itf The interface to use as reference.
+//	 * @return The Path-like string of the header file.
+//	 */
+//	private String itf2h(MindInterface itf, Map<Object, Object> context){
+//		String headerFileName = null;
+//		try {
+//			IDL idl = idlLoaderItf.load(itf.getSignature(), context);
+//			if (idl.getName().startsWith("/")) { //FIXME : Why this really needed ???
+//				headerFileName = PathHelper.replaceExtension(idl.getName(), ".itf.h");
+//			} else {
+//				headerFileName = PathHelper.fullyQualifiedNameToPath(idl.getName(), ".itf.h");		
+//			}
+//		} catch (ADLException e) {
+//			logger.info("interface " + itf.getName() + " cannot be loaded !");
+//			e.printStackTrace();
+//		}
+//		return headerFileName.substring(1);
+//	}
 
-	/**
-	 * Layout the C function parameters.
-	 * @param parameters an array of Parameter.
-	 * @param writer The writer to write in.
-	 */
-	public static void writeCFunctionParameters(Parameter[] parameters, PrintWriter writer) {
-		// paramDelimiter is put in front of parameters. 
-		// The first is a space the next are comas (space param coma param)
-		String paramDelimiter = " ";
-		if ((parameters != null) && (parameters.length != 0)) {
-			for (Parameter parameter : parameters) {
-				writer.print(paramDelimiter + SimpleMacroHelper.typeToString(parameter.getType()) + " " + parameter.getName());
-				paramDelimiter = ", ";
-			}
-		} else {
-			writer.print("void");
-		}
-	}
+//	/**
+//	 * Create prototypes of the methods of an interface.
+//	 * @param itf The interface to be prototyped.
+//	 * @param writer The PrintWriter where to put write the prototypes. 
+//	 * @param context The global compilation context.
+//	 */
+//	private void methDeclare(MindInterface itf, PrintWriter writer, Map<Object, Object> context) {
+//		try {
+//			IDL idl = idlLoaderItf.load(itf.getSignature(), context);
+//			if (idl instanceof InterfaceDefinition) {
+//				Method[] meths = ((InterfaceDefinition)idl).getMethods();
+//				if ((meths != null) && (meths.length !=0)){
+//					writer.println();
+//					writer.println("/* Begin METH declaration */");
+//					// Mangling is left out for the C preprocessor 
+//					for (Method meth : meths) {
+//						writer.print(SimpleMacroHelper.typeToString(meth.getType()) + " METH(" + itf.getName() + ", " + meth.getName() + ")(" );
+//						Parameter[] parameters = meth.getParameters();
+//						writeCFunctionParameters(parameters,writer);
+//						writer.println(");");
+//					}
+//					writer.println("/* End  METH declaration */");
+//					writer.println();
+//				}
+//			}
+//		} catch (ADLException e) {
+//			logger.info("Interface cannot be resolved to a IDL !");
+//			e.printStackTrace();
+//		}
+//	}
+
+//	/**
+//	 * Layout the C function parameters.
+//	 * @param parameters an array of Parameter.
+//	 * @param writer The writer to write in.
+//	 */
+//	public static void writeCFunctionParameters(Parameter[] parameters, PrintWriter writer) {
+//		// paramDelimiter is put in front of parameters. 
+//		// The first is a space the next are comas (space param coma param)
+//		String paramDelimiter = " ";
+//		if ((parameters != null) && (parameters.length != 0)) {
+//			for (Parameter parameter : parameters) {
+//				writer.print(paramDelimiter + SimpleMacroHelper.typeToString(parameter.getType()) + " " + parameter.getName());
+//				paramDelimiter = ", ";
+//			}
+//		} else {
+//			writer.print("void");
+//		}
+//	}
 }

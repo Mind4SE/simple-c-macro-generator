@@ -36,8 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.ow2.mind.CompilerRunner;
-
 import org.testng.annotations.BeforeMethod;
 
 public abstract class AbstractFunctionalTest {
