@@ -1,0 +1,4 @@
+primitive common.BasicTypeClient {
+	requires BasicTypes as basicTypesItf; 	
+	source BasicTypeClient.c;
+}

@@ -89,10 +89,10 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 	}
 
 	/**
-	 * The most basic test.
+	 * Server interface with C native type only.
 	 */
 	@Test(groups = {"simpleGeneration"})
-	public void basicHelloworldTest()
+	public void basicTypesServerTest()
 			throws Exception {
 		
 		initPath();
@@ -130,5 +130,49 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 		}
 
 	}
+
+	/**
+	 * Client interface with C native type only.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void basicTypesClientTest()
+			throws Exception {
+		
+		initPath();
+		
+		initContext(true);
+		String adlName = "common.BasicTypeClient";
+
+		List<String> flags = new ArrayList<String>();
+		
+		final Definition d = runner.load(adlName);
+		final Run runAnno = AnnotationHelper.getAnnotation(d, Run.class);
+		if (runAnno != null) {
+			runner.addCFlags(flags);
+
+			runner.compile(adlName, runAnno.executableName);
+
+			// Testing .adl.h file existence.
+			File adlOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(adlName, ADL_EXT), runner.context);
+			assertTrue(adlOutputFile.exists());
+
+			// Testing .itf.h existence.
+			File itfOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath("common.BasicTypes",ITF_EXT), runner.context);
+			assertTrue(itfOutputFile.exists());
+			
+			// Testing .make existence.
+			File makeOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(adlName, MAKE_EXT), runner.context);
+			assertTrue(makeOutputFile.exists());
+			
+			final int r = Runtime.getRuntime().exec("make -f" + makeOutputFile.getAbsolutePath()).waitFor();
+			assertEquals(r, 0, "Unexpected return value");
+
+		} else {
+			if (logger.isLoggable(Level.FINE))
+				logger.log(Level.FINE, "Skipped test on ADL " + adlName + " : no @Run annotation was found.");
+		}
+
+	}
+
 }
 
