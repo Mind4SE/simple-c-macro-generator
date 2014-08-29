@@ -1,0 +1,5 @@
+primitive common.IncludeInPrivate {
+ 	
+	data IncludeInPrivateData.h;
+	source BasicTypePrivate.c;
+}

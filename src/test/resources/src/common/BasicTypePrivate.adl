@@ -1,0 +1,4 @@
+primitive common.BasicTypePrivate {
+	data  BasicTypePrivateData.h;
+	source BasicTypePrivate.c;
+}

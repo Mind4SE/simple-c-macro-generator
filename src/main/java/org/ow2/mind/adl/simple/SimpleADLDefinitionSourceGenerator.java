@@ -372,7 +372,7 @@ DefinitionSourceGenerator {
 									makePrinter.print(" -I" + inputResourceRoot.getPath());
 								}
 							}
-							makePrinter.print(" -I" + outputFileLocatorItf.getCCompiledOutputDir(context).getAbsolutePath());
+							makePrinter.println(" -I" + outputFileLocatorItf.getCCompiledOutputDir(context).getAbsolutePath());
 						}
 
 					}

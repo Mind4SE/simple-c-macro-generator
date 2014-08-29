@@ -173,6 +173,59 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 		compileADL("common.MindThis",usedItfs);
 	}
 	
+	/**
+	 * Attribute test.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void attributeTest()
+			throws Exception {
+		compileADL("common.Attributes",null);
+	}
+	
+	/**
+	 * Private data with only native C types.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void basicTypePrivateTest()
+			throws Exception {
+		compileADL("common.BasicTypePrivate",null);
+	}
+
+	/**
+	 * Private data with only native C types inlined in ADL.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void basicTypePrivateInlinedTest()
+			throws Exception {
+		compileADL("common.BasicTypePrivateInlined",null);
+	}
+
+	/**
+	 * Private data with includes.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void includeInPrivateTest()
+			throws Exception {
+		compileADL("common.IncludeInPrivate",null);
+	}
+
+	/**
+	 * Private data inlined with includes.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void includeInPrivateInlinedTest()
+			throws Exception {
+		compileADL("common.IncludeInPrivateInlined",null);
+	}
+	
+	/**
+	 * Inheritance
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void inheritanceTest()
+			throws Exception {
+		compileADL("common.Inheritance",null);
+	}
 	private void compileADL(String adlName, String usedItfs[])
 			throws Exception {
 
@@ -193,9 +246,11 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 		assertTrue(adlOutputFile.exists());
 
 		// Testing .itf.h existence.
-		for (String itf : usedItfs) {
-			File itfOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(itf,ITF_EXT), runner.context);
-			assertTrue(itfOutputFile.exists());
+		if (usedItfs != null) {
+			for (String itf : usedItfs) {
+				File itfOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(itf,ITF_EXT), runner.context);
+				assertTrue(itfOutputFile.exists());
+			}
 		}
 
 		// Testing .make existence.

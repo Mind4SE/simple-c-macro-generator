@@ -1,0 +1,4 @@
+primitive common.Attributes {
+	attribute int toto = 0; 	
+	source Attributes.c;
+}

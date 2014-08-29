@@ -1,0 +1,9 @@
+primitive common.IncludeInPrivateInlined {
+	data {{ 
+#include <common/h.h>
+struct {
+	titi toto;
+} PRIVATE;
+	}};
+	source BasicTypePrivate.c;
+}

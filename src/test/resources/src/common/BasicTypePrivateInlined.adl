@@ -1,0 +1,8 @@
+primitive common.BasicTypePrivateInlined {
+	data  {{
+		struct {
+			int toto;
+		} PRIVATE;
+	}};
+	source BasicTypePrivate.c;
+}
