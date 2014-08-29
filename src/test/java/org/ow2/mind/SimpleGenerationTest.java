@@ -226,6 +226,26 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 			throws Exception {
 		compileADL("common.Inheritance",null);
 	}
+	
+	/**
+	 * Inheritance
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void interfaceInheritanceTest()
+			throws Exception {
+		String usedItfs[] = {"common.BasicTypes","common.Inheritance"};
+		compileADL("common.InterfaceInheritance",usedItfs);
+	}
+	
+	/**
+	 * @Cflags annotation
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void atCFlagsTest()
+			throws Exception {
+		compileADL("common.AtCFlags",null);
+	}
+	
 	private void compileADL(String adlName, String usedItfs[])
 			throws Exception {
 

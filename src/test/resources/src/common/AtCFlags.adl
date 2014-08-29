@@ -1,0 +1,4 @@
+@CFlags("-DBIDULE=1")
+primitive common.AtCFlags {
+	source AtCFlags.c; 	
+}

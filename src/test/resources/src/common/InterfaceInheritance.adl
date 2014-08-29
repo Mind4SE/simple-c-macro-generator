@@ -1,0 +1,6 @@
+primitive common.InterfaceInheritance 
+extends BasicTypeServer {
+	@Override
+	provides Inheritance as basicTypesItf;
+	source InterfaceInheritance.c;
+}
