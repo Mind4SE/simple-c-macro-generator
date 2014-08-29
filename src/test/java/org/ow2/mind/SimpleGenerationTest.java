@@ -36,7 +36,6 @@ import org.objectweb.fractal.adl.util.FractalADLLogManager;
 import org.ow2.mind.AbstractSimpleGenerationTest;
 import org.ow2.mind.adl.annotation.predefined.Run;
 import org.ow2.mind.annotation.AnnotationHelper;
-import org.ow2.mind.io.OutputFileLocator;
 import org.testng.annotations.Test;
 
 public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
@@ -48,44 +47,8 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 
 	@Override
 	protected void initPath() {
-		initSourcePath(getDepsDir("fractal/api/Component.itf").getAbsolutePath(),
-				"src");
-	}
-
-
-
-	protected class TestCase {
-
-		public String rootDir;
-		public String adlName;
-		public String optimCombo;
-		public List<String> flags ;
-
-		public TestCase(String rootDir,
-				String adlName,
-				String optimCombo,
-				List<String> flags) {
-			this.rootDir 		= rootDir;
-			this.adlName 		= adlName;
-			this.optimCombo 	= optimCombo ;
-			this.flags 			= flags ;
-		}
-
-		public String toString(){
-			String flagsStr;
-			String optimStr;
-
-			if ((flags != null) && (!flags.isEmpty()))
-				flagsStr = ", flags=" + flags;
-			else flagsStr = ", no flag";
-
-			if ((optimCombo != null) && (!optimCombo.equals("")))
-				optimStr = ", optimCombo=" + optimCombo;
-			else optimStr = ", no optim";
-
-			return "[TestCase] " + rootDir + "/" + adlName + optimStr + flagsStr;
-		}
-
+		File header = new File("src/assemble/resources/runtime/");
+		initSourcePath(getDepsDir("fractal/api/Component.itf").getAbsolutePath(),header.getAbsolutePath(),"src");
 	}
 
 	/**
@@ -94,41 +57,8 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 	@Test(groups = {"simpleGeneration"})
 	public void basicTypesServerTest()
 			throws Exception {
-		
-		initPath();
-		
-		initContext(true);
-		String adlName = "common.BasicTypeServer";
-
-		List<String> flags = new ArrayList<String>();
-		
-		final Definition d = runner.load(adlName);
-		final Run runAnno = AnnotationHelper.getAnnotation(d, Run.class);
-		if (runAnno != null) {
-			runner.addCFlags(flags);
-
-			runner.compile(adlName, runAnno.executableName);
-
-			// Testing .adl.h file existence.
-			File adlOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(adlName, ADL_EXT), runner.context);
-			assertTrue(adlOutputFile.exists());
-
-			// Testing .itf.h existence.
-			File itfOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath("common.BasicTypes",ITF_EXT), runner.context);
-			assertTrue(itfOutputFile.exists());
-			
-			// Testing .make existence.
-			File makeOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(adlName, MAKE_EXT), runner.context);
-			assertTrue(makeOutputFile.exists());
-			
-			final int r = Runtime.getRuntime().exec("make -f" + makeOutputFile.getAbsolutePath()).waitFor();
-			assertEquals(r, 0, "Unexpected return value");
-
-		} else {
-			if (logger.isLoggable(Level.FINE))
-				logger.log(Level.FINE, "Skipped test on ADL " + adlName + " : no @Run annotation was found.");
-		}
-
+		String usedItfs[] = {"common.BasicTypes"};
+		compileADL("common.BasicTypeServer",usedItfs);
 	}
 
 	/**
@@ -137,40 +67,82 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 	@Test(groups = {"simpleGeneration"})
 	public void basicTypesClientTest()
 			throws Exception {
-		
+		String usedItfs[] = {"common.BasicTypes"};
+		compileADL("common.BasicTypeClient",usedItfs);
+	}
+
+	/**
+	 * Server interface with typedef definition.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void typedefServerTest()
+			throws Exception {
+		String usedItfs[] = {"common.Typedef"};
+		compileADL("common.TypedefServer",usedItfs);
+	}
+
+	/**
+	 * Client interface with typedef definition.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void typedefClientTest()
+			throws Exception {
+		String usedItfs[] = {"common.Typedef"};
+		compileADL("common.TypedefClient",usedItfs);
+	}
+
+	/**
+	 * Server interface with struct definition.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void structServerTest()
+			throws Exception {
+		String usedItfs[] = {"common.Struct"};
+		compileADL("common.StructServer",usedItfs);
+	}
+
+	/**
+	 * Clent interface with struct definition.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void structClientTest()
+			throws Exception {
+		String usedItfs[] = {"common.Struct"};
+		compileADL("common.StructClient",usedItfs);
+	}
+
+	private void compileADL(String adlName, String usedItfs[])
+			throws Exception {
+
 		initPath();
-		
+
 		initContext(true);
-		String adlName = "common.BasicTypeClient";
 
 		List<String> flags = new ArrayList<String>();
-		
+
 		final Definition d = runner.load(adlName);
-		final Run runAnno = AnnotationHelper.getAnnotation(d, Run.class);
-		if (runAnno != null) {
-			runner.addCFlags(flags);
 
-			runner.compile(adlName, runAnno.executableName);
+		runner.addCFlags(flags);
 
-			// Testing .adl.h file existence.
-			File adlOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(adlName, ADL_EXT), runner.context);
-			assertTrue(adlOutputFile.exists());
+		runner.compile(adlName, "plop");
 
-			// Testing .itf.h existence.
-			File itfOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath("common.BasicTypes",ITF_EXT), runner.context);
+		// Testing .adl.h file existence.
+		File adlOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(adlName, ADL_EXT), runner.context);
+		assertTrue(adlOutputFile.exists());
+
+		// Testing .itf.h existence.
+		for (String itf : usedItfs) {
+			File itfOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(itf,ITF_EXT), runner.context);
 			assertTrue(itfOutputFile.exists());
-			
-			// Testing .make existence.
-			File makeOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(adlName, MAKE_EXT), runner.context);
-			assertTrue(makeOutputFile.exists());
-			
-			final int r = Runtime.getRuntime().exec("make -f" + makeOutputFile.getAbsolutePath()).waitFor();
-			assertEquals(r, 0, "Unexpected return value");
-
-		} else {
-			if (logger.isLoggable(Level.FINE))
-				logger.log(Level.FINE, "Skipped test on ADL " + adlName + " : no @Run annotation was found.");
 		}
+
+		// Testing .make existence.
+		File makeOutputFile = runner.outputFileLocator.getCSourceOutputFile(PathHelper.fullyQualifiedNameToPath(adlName, MAKE_EXT), runner.context);
+		assertTrue(makeOutputFile.exists());
+
+		File dir = runner.outputFileLocator.getCSourceOutputDir(runner.context);
+		final int r = Runtime.getRuntime().exec("make -f" + makeOutputFile.getAbsolutePath(), null, dir).waitFor();
+		assertEquals(r, 0, "Unexpected return value");
 
 	}
 

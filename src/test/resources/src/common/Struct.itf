@@ -1,0 +1,5 @@
+struct toto {int i;};
+
+interface common.Struct {
+	struct toto truc (struct toto);
+}

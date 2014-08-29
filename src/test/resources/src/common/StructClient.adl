@@ -1,0 +1,4 @@
+primitive common.StructClient {
+ 	requires Struct as structItf;
+	source StructClient.c;
+}

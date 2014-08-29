@@ -1,0 +1,5 @@
+typedef int tata;
+
+interface common.Typedef {
+	tata pouet(const tata);
+}

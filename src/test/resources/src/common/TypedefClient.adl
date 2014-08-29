@@ -1,0 +1,4 @@
+primitive common.TypedefClient {
+	requires Typedef as typedefItf; 	
+	source TypedefClient.c;
+}

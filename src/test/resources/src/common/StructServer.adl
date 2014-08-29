@@ -1,0 +1,4 @@
+primitive common.StructServer {
+	provides Struct as structItf; 	
+	source StructServer.c;
+}
