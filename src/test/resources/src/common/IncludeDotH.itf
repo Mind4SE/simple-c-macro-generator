@@ -1,0 +1,4 @@
+#include <common/h.h>
+interface common.IncludeDotH {
+	titi p(titi);
+}

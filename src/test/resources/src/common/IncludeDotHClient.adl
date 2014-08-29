@@ -1,0 +1,4 @@
+primitive common.IncludeDotHClient {
+	requires IncludeDotH as includeDotHItf; 	
+	source IncludeDotHClient.c;
+}

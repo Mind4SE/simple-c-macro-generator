@@ -111,6 +111,48 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 		compileADL("common.StructClient",usedItfs);
 	}
 
+
+	/**
+	 * Server interface with .idt include.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void includeDotIDTServerTest()
+			throws Exception {
+		String usedItfs[] = {"common.IncludeDotIDT"};
+		compileADL("common.IncludeDotIDTServer",usedItfs);
+	}	
+
+	/**
+	 * Client interface with .idt include.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void includeDotIDTClientTest()
+			throws Exception {
+		String usedItfs[] = {"common.IncludeDotIDT"};
+		compileADL("common.IncludeDotIDTClient",usedItfs);
+	}
+	
+	/**
+	 * Server interface with .h include.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void includeDotHServerTest()
+			throws Exception {
+		String usedItfs[] = {"common.IncludeDotH"};
+		compileADL("common.IncludeDotHServer",usedItfs);
+	}
+	
+	
+	/**
+	 * Server interface with .h include.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void includeDotHClientTest()
+			throws Exception {
+		String usedItfs[] = {"common.IncludeDotH"};
+		compileADL("common.IncludeDotHClient",usedItfs);
+	}
+	
 	private void compileADL(String adlName, String usedItfs[])
 			throws Exception {
 

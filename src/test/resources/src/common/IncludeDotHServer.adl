@@ -1,0 +1,4 @@
+primitive common.IncludeDotHServer {
+	provides IncludeDotH as includeDotHItf;
+	source IncludeDotHServer.c;
+}

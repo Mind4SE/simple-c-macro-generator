@@ -1,0 +1,4 @@
+primitive common.IncludeDotIDTClient {
+	requires IncludeDotIDT as includeDotIDTItf;
+	source IncludeDotIDTClient.c;
+}

@@ -1,0 +1,5 @@
+#include <common/idt.idt>
+
+interface common.IncludeDotIDT {
+	prout mionch(prout);
+}
