@@ -1,0 +1,4 @@
+primitive common.CollectionClient {
+	requires BasicTypes as basicTypesItf[10]; 	
+	source CollectionClient.c;
+}

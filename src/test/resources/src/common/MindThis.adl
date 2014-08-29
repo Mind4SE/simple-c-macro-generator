@@ -1,0 +1,4 @@
+primitive common.MindThis {
+	requires BasicTypes as basicTypesItf; 	
+	source MindThis.c;
+}

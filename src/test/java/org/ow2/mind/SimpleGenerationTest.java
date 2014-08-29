@@ -144,13 +144,33 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 	
 	
 	/**
-	 * Server interface with .h include.
+	 * Client interface with .h include.
 	 */
 	@Test(groups = {"simpleGeneration"})
 	public void includeDotHClientTest()
 			throws Exception {
 		String usedItfs[] = {"common.IncludeDotH"};
 		compileADL("common.IncludeDotHClient",usedItfs);
+	}
+	
+	/**
+	 * Client collection interface.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void collectionClientTest()
+			throws Exception {
+		String usedItfs[] = {"common.BasicTypes"};
+		compileADL("common.CollectionClient",usedItfs);
+	}
+	
+	/**
+	 * Explicit mind_this.
+	 */
+	@Test(groups = {"simpleGeneration"})
+	public void mindThisTest()
+			throws Exception {
+		String usedItfs[] = {"common.BasicTypes"};
+		compileADL("common.MindThis",usedItfs);
 	}
 	
 	private void compileADL(String adlName, String usedItfs[])
