@@ -1,0 +1,4 @@
+primitive operation.Div {
+ 	provides Binary as div;
+	source Div.c;
+}

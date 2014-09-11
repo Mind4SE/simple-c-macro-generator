@@ -1,0 +1,4 @@
+primitive operation.Add {
+	provides Binary as add; 	
+	source Add.c;
+}

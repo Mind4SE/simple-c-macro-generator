@@ -1,0 +1,4 @@
+primitive operation.Sub {
+	provides Binary as sub; 	
+	source Sub.c;
+}

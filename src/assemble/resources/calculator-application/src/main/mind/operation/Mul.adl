@@ -1,0 +1,4 @@
+primitive operation.Mul {
+	provides Binary as mul; 	
+	source Mul.c;
+}

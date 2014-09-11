@@ -1,0 +1,4 @@
+
+interface operation.Binary {
+	long exec(long a, long b);
+}

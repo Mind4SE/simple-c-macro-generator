@@ -1,0 +1,8 @@
+@Singleton
+primitive main.CLIParser {
+	requires operation.Binary as add; 	
+	requires operation.Binary as sub;
+	requires operation.Binary as div;
+	requires operation.Binary as mul; 	
+	source CLIParser.c;
+}

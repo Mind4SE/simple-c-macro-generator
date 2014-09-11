@@ -1,0 +1,14 @@
+@Singleton
+composite main.Calculator {
+ 	contains CLIParser as cliParser;
+
+ 	contains operation.Add as binaryAdd;
+ 	binds cliParser.add to binaryAdd.add;
+ 	contains operation.Mul as binaryMul;
+ 	binds cliParser.mul to binaryMul.mul;
+ 	contains operation.Div as binaryDiv;
+ 	binds cliParser.div to binaryDiv.div;
+ 	contains operation.Sub as binarySub; 	
+ 	binds cliParser.sub to binarySub.sub;
+ 	
+}
