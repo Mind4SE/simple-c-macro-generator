@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section[
+<!ENTITY % myents SYSTEM "../shared.ent" >
+%myents;
+]>
+<section xml:id="C-macro_usage" xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+  <title>Usage</title>
+  <section>
+    <title>Pre-requisites</title>
+    <para>The <code>simple-c-macro-generator*.jar</code> file is required in the <code>ext</code>
+      sub-directory of the Mind C compiler directory</para>
+  </section>
+  <section>
+    <title>Parameters</title>
+    <para>To activate the C macro generator plugin for a compilation, the option
+        <code>--simple-gen</code> must be used with the <command>mindc</command> command
+      line.</para>
+    <para>The files processed are in the source paths provided by the <code>--source-path</code>
+      option. </para>
+    <para>The output files are generated in the directory provided by the <code>--output-path</code>
+      option. </para>
+    <para>For each primitive definition encountered, the output is : </para>
+    <itemizedlist>
+      <listitem>
+        <para>A <code>.c.h</code> for each <code>source</code> directive.</para>
+      </listitem>
+      <listitem>
+        <para>A <code>.itf.h</code> for each <code>provides</code>, <code>requires</code>, or
+            <code>@UsedIDL</code> directive.</para>
+      </listitem>
+      <listitem>
+        <para>A <code>.itf.h</code> for each <code>":"</code> (interface inheritance), or
+            <code>@ImportIDL</code> directive found in a used interface.</para>
+      </listitem>
+      <listitem>
+        <para>A <code>.adl.h</code> for the current definition and each <code>extends</code>
+          directive.</para>
+      </listitem>
+      <listitem>
+        <para>A <code>.make</code> file to compile the definition and its generated code.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+
+  <section>
+    <title>Example</title>
+    <example>
+      <title>Compilation of a single component.</title>
+      <para> Considering the component definition <code>pkg.Prim</code> with the following
+        definition : </para>
+      <programlisting linenumbering="numbered" language="adl">primitive pkg.Prim {
+	provides pkg.Itf1 as providedItf;
+	requires pkg.Itf2 as requiredItf;
+	source PrimFirstHalf.c;
+	source PrimSecondHalf.c;
+}</programlisting>
+
+      <para>The following command line generates the files for the <code>pkg.Prim</code> primitive
+        using the C macro generator plugin : </para>
+      <programlisting language="sh"> $ mindc --simple-gen --source-path=src/main/mind --output-path=target/c_macro_generation pkg.Prim</programlisting>
+
+      <para>After generation, the <code>target/c_macro_generation</code> directory contains the
+        following : </para>
+      <programlisting>/pkg/
+   |__Itf1.itf.h
+   |__Itf2.itf.h
+   |__Prim.adl.h
+   |__PrimFirstHalf.c.h
+   |__PrimSecondHalf.c.h
+   |__Prim.make</programlisting>
+      <para> The code generated can be compiled as follows : </para>
+      <programlisting language="sh"> $ make CC=gcc -f target/c_macro_generation/pkg/Prim.make</programlisting>
+      <para>The build result is the files <code>PrimFirstHalf.o</code> and
+          <code>PrimSecondHalf.o</code>.</para>
+    </example>
+
+  </section>
+</section>

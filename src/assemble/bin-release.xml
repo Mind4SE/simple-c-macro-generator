@@ -22,6 +22,19 @@
 		<fileSet>
 			<directory>src/assemble/resources/runtime</directory>
 			<outputDirectory>runtime</outputDirectory>
+			<directoryMode>0644</directoryMode>
+		</fileSet>
+		<fileSet>
+			<directory>src/assemble/resources/examples</directory>
+			<outputDirectory>examples</outputDirectory>
+			<directoryMode>0644</directoryMode>
 		</fileSet>
 	</fileSets>
+	<files>
+		<file>
+			<source>target/site/c-macro-generator.pdf</source>
+			<fileMode>0644</fileMode>
+			<outputDirectory>examples/calculator-application</outputDirectory>
+		</file>
+	</files>
 </assembly>

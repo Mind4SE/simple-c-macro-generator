@@ -1,25 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"./dtd/docbookx.dtd" [
-<!ENTITY % myents SYSTEM "./shared.ent">
+<!DOCTYPE book[
+<!ENTITY % myents SYSTEM "./shared.ent" >
 %myents;
 ]>
-<book status="draft" version="0.1" xmlns="http://docbook.org/ns/docbook">
-  <bookinfo>
-    <title>C macro generator User Guide</title>
-
-    <author>
-      <firstname>Julien Tous</firstname>
-
-      <surname/>
-
-      <affiliation>
-        <orgname/>
-      </affiliation>
-    </author>
-
-    <pubdate>2014-09-03</pubdate>
-  </bookinfo>
+<book status="draft" xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+  <info>
+    <title><emphasis>&productName;</emphasis> User Guide</title>
+    <revhistory>
+      <revision>
+        <revnumber>0.1</revnumber>
+        <date>2014-09-03</date>
+        <author>
+          <personname>
+            <firstname>Julien</firstname>
+            <surname>TOUS</surname>
+          </personname>
+        </author>
+        <revremark>First revision of <emphasis>&productName;</emphasis> User Guide</revremark>
+      </revision>
+      <revision>
+        <revnumber>0.2</revnumber>
+        <date>2014-09-22</date>
+        <author>
+          <personname>
+            <firstname>François</firstname>
+            <surname>DELOYE</surname>
+          </personname>
+        </author>
+        <revremark>Typos fixes</revremark>
+      </revision>
+    </revhistory>
+  </info>
 
   <chapter>
     <title>Introduction</title>
@@ -27,105 +38,31 @@
     <section>
       <title>Aim of this document</title>
 
-      <para>This document introduces the C macro generator plugin to the mind compiler and demonstrate its usage using examples.</para>
+      <para>This document introduces the <emphasis>&productName;</emphasis> plugin to the mind
+        compiler and demonstrates its usage using examples.</para>
+      <para>Specifically in this document, the <emphasis>&productName;</emphasis> plugin will be
+        used to analyse the source code of a Mind project using Klocwork tool. </para>
     </section>
-    <section>
-      <title>Aim of the C macro generator plugin</title>
-      <para>
-      The C macro generator plugin, provides an alternative code generation which does not involve the preprocessing of the user sources.
-      Currently the C macro generator plugin is able to produce the necessary glue to compile each primitive definition of an application in a set of object files, 
-      but cannot assemble those object file into an executable.
-      Which means the C macro generator plugin is well suited to be combined with legacy tools that deals with C code, 
-      but does NOT fit to the task of releasing binaries, neither to execute or benchmark code size.
-      </para>
-
-      <para>
-      	Specifically the C macro generator plugin will be used in this document for static analysis of Mind project. 
-      </para>
-    </section>  
-    </chapter>
-    <chapter>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sections/c-macro-generator_aim.xml"/>
+  </chapter>
+  <chapter>
     <title>Overview</title>
-    <section>
-      <title>Usage</title>
-
-      <para>
-      To activate the the C macro generator plugin for a compilation, the option <code>--simple-c</code> must be appended to the mindc command line.
-      The generated files will be located in the directory pointed by the <code>-o</code> option, as usual.
-      </para>
-
-	<para>
-	The expected output is, for each encountered primitive definition :
-	</para>
-	<itemizedlist>
-            <listitem><para>A <code>.c.h</code> for each <code>source</code> directive.</para></listitem>
-            <listitem><para>A <code>.itf.h</code> for each <code>provides</code>, <code>requires</code>, or <code>@UsedIDL</code> derictive.</para></listitem>
-            <listitem><para>A <code>.itf.h</code> for each <code>":"</code> (interface inheritance), or <code>@ImportIDL</code> derictive found in a used interface.</para></listitem>
-            <listitem><para>A <code>.adl.h</code> for the current definition and each <code>extends</code> directive.</para></listitem>
-            <listitem><para>A <code>.make</code> file to compile the definition with it's generated code.</para></listitem>
-	</itemizedlist>
-	</section>
-	   
-    <section>
-      <title>Example</title>
-	<example><title>Compilation of a single component.</title>
-	<para>
-	Considering the component definition <code>pkg.Prim</code> with the following definition : 
-	</para>
-	<programlisting language="adl">
-primitive pkg.Prim {
-	provides pkg.Itf1 as providedItf;
-	requires pkg.Itf2 as requiredItf;
-	source PrimFirstHalf.c;
-	source PrimSecondHalf.c;
-}	
-	</programlisting>
-
-	<para>
-	Using the C macro genarator plugin, one can "compile" this definition with the command : </para>	
-	<programlisting language="sh">
-mindc --simple-c --source-path=src/main/mind -o=target/c_macro_genration pkg.Prim
-	</programlisting>
-	
-	<para>
-	The <code>target/c_macro_genration</code> directory will contain the following files and directory :
-	</para>
-	<programlisting >
-/pkg/
-   |__Itf1.itf.h
-   |__Itf2.itf.h
-   |__Prim.adl.h
-   |__PrimFirstHalf.c.h
-   |__PrimSecondHalf.c.h
-   |__Prim.make
-	</programlisting>	
-	<para>
-	Executing the command :
-	</para>
-	<programlisting language="sh">
-	make CC=gcc -f target/c_macro_genration/pkg/Prim.make
-	</programlisting>
-	<para>Can then generate the files <code>PrimFirstHalf.o</code> and <code>PrimSecondHalf.o</code></para>
-	</example>
-	
-    </section>
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="sections/c-macro-generator_usage.xml"/>
 
 
   </chapter>
-      <chapter>
+  <chapter>
     <title>Static analysis</title>
     <section>
-    <title>Demonstration application overview</title>
-    <para>
-    We will considere a simple super-over-engineered calculator application.
-    It can handle simple integer calculation from the command line such as <code>1 + 2</code>, and print the result to the standard output.
-    It can be build using the commmand <code>make all</code> of the standard makefile. 
-    The resulting executable will be located in the <code>target/Default/binaries/</code> folder.
-    </para>
-	   <example>
-      <title>Sample executions</title>
-        <programlisting language="sh">
-$ ./target/Default/binaries/calc 2 + 2
+      <title>Overview of the demonstration application</title>
+      <para> Let us consider a simple super-over-engineered calculator application. It can handle
+        simple integer calculation from the command line such as <code>1 + 2</code>, and print the
+        result to the standard output. It can be build using the command <code>make all</code> of
+        the standard makefile. The resulting executable will be located in the
+          <code>target/Default/binaries/</code> folder. </para>
+      <example>
+        <title>Sample executions</title>
+        <programlisting language="sh">$ ./target/Default/binaries/calc 2 + 2
 4
 $ ./target/Default/binaries/calc 4 / 2
 2
@@ -133,172 +70,167 @@ $ ./target/Default/binaries/calc -2 - 25
 -27
 $ # Note that * needs to be escaped as it is a special shell token
 $ ./target/Default/binaries/calc -2 '*' 25  
--50
-		</programlisting>
+-50</programlisting>
       </example>
 
-	<para>
-	It's architecture is described in the following diagram.
-	</para>
-   <example>
-      <title>Application overview</title>
+      <para> Its architecture is described in the following diagram. </para>
+      <example>
+        <title>Application overview</title>
 
-          <mediaobject>
-            <imageobject role="fo">
-              <imagedata align="center" fileref="images/Overview.svg"
-                         scale="50"/>
-            </imageobject>
-          </mediaobject>
-        </example>	
-	<para>
-	<itemizedlist>
-	<listitem><para><code>cliParser</code> component handles the command line and delegate the calculation to corresponding <code>binaryOpperation</code> component. 
-	It's implementation is located in the <code>/main/CLIParser.c</code> file.</para></listitem>
-	<listitem><para>Component <code>binaryAdd</code> implements the addition, the corresponding source file is located at <code>/operation/Add.c</code> and so on.</para></listitem>
-	</itemizedlist>
-	</para>
-	
+        <mediaobject>
+          <imageobject role="fo">
+            <imagedata align="center" fileref="images/Overview.svg" scale="50"/>
+          </imageobject>
+        </mediaobject>
+      </example>
+      <para>
+        <itemizedlist>
+          <listitem>
+            <para><code>cliParser</code> component handles the command line and delegates the
+              calculation to the corresponding <code>binaryOperation</code> component. Its
+              implementation is located in the <code>/main/CLIParser.c</code> file.</para>
+          </listitem>
+          <listitem>
+            <para>Component <code>binaryAdd</code> implements the addition, the corresponding source
+              is located in the <code>/operation/Add.c</code> file and so on.</para>
+          </listitem>
+        </itemizedlist>
+      </para>
+
 
     </section>
     <section>
-    <title>Generation of static-analysis friendly code</title>
-    <para>
-    We could add the <code>--simple-gen</code> flag to the compilation options in the <code>Default.properties</code> file to generate static-analysis friendly code.
-    But doing so would prevent compiling the application (remember that the c macro generator plugin can not compile working code). 
-    We chose instead to modify the <code>Makefile</code>, and add an <code>analysis</code> target that will be dedicated to the generation of static-analysis friendly code. 
-    </para>
-    <para> By copy/past/modifying the <code>Makefile</code> we get :</para>
-    <example>
-      <title>Modifyed makefile</title>
-       <programlisting language="sh">
-analysisOutputDir=$(confOutputDirVar)/analysis
+      <title>Generation of static-analysis friendly code</title>
+      <para>Using <code>--simple-gen</code> flag to the compilation options in the
+          <code>Default.properties</code> file, the generated code can be processed by a
+        static-analysis tool. </para>
+      <para>But doing so prevents compiling the application .</para>
+      <para>Since, the use of the <code>--simple-gen</code> flag to the compilation options would
+        prevents compiling the application (remember that the <emphasis>&productName;</emphasis>
+        plugin does not generate code for a whole application), a new target <code>analysis</code>
+        is added to the <code>Makefile</code>, that is dedicated to the generation of code for
+        static-analysis purpose. </para>
+      <para>By copy/past/modifying the <code>Makefile</code> we get :</para>
+      <example>
+        <title>Modified makefile</title>
+        <programlisting language="sh">analysisOutputDir=$(confOutputDirVar)/analysis
 
 build_analysis: dependencies
 	mkdir -p $(analysisOutputDir)
 	$(MINDC) --simple-gen $(sourcePathArg) $(includePathArg) $(compilerCommandArg) $(linkerCommandArg) $(assemblerCommandArg) $(asFlagsArg) $(cppFlagsArg) $(cFlagsArg) $(ldFlagsArg) $(extraOptionsArg) -o=$(analysisOutputDir) $(targetComponent):$(binaryName)
 
 analysis: build_analysis
-	for m in $(shell find $(analysisOutputDir) -name *.make); do  make CC=$(compilerCommand) -f $$m; done
-			</programlisting>
-        </example>
-        
-     <para>
-     This new <code>analysis</code> target will create a new directory <code>target/Default/analysis/</code>, 
-     generate in it the code for the analysis of the application, 
-     and compile each component definition using the generatated makefiles. 
-     </para>
-     <para>
-     This target does involve static-analysis yiet.
-     This is the topic for the next sections.
-     </para>
-	
-    
+	for m in $(shell find $(analysisOutputDir) -name *.make); do  make CC=$(compilerCommand) -f $$m; done</programlisting>
+      </example>
+
+      <para> This new <code>analysis</code> target will create a new directory
+          <code>target/Default/analysis/</code>, generate in it the code for the analysis of the
+        application, and compile each component definition using the generated makefiles. </para>
+      <para> This target does involve static-analysis yet. This is the topic for the next sections. </para>
+
+
     </section>
-    
+
     <section>
-      <title>Klockwork</title>
-      <para>
-      The pre-requisite are for running a klockwork analysis on this example are :
-      </para>
-      
+      <title>Klocwork</title>
+      <para> The pre-requisite are for running a Klocwork analysis on this example are : </para>
+
       <itemizedlist>
-      <listitem><para>A local klockwork install. (refer to <ulink url="http://www.klocwork.com/products/documentation/current/Klocwork_Insight_Documentation" />)</para></listitem>
-      <listitem><para>A klockwork account on a klockwork host. <!--(refer to <ulink url="http://pso.schneider-electric.com/wiki/index.php/Global_Security_Lab" />) --> </para></listitem>
+        <listitem>
+          <para>A local Klocwork install. (refer to <ulink
+              url="http://www.klocwork.com/products/documentation/current/Klocwork_Insight_Documentation"
+            />)</para>
+        </listitem>
+        <listitem>
+          <para>A Klocwork account on a Klocwork host.
+            <!--(refer to <ulink url="http://pso.schneider-electric.com/wiki/index.php/Global_Security_Lab" />) -->
+          </para>
+        </listitem>
       </itemizedlist>
-      
+
       <section>
-      <title>Klockwork project creation on the klockwork host.</title>
-      <para>
-      From a web browser, login to the klockwork host and create a project.
-      The addresse of the klockwork host will be refered later as <code>$KW_HOST</code> (Something like <code>http://the.internet.host.address:8082</code>).
-      The project name wil we refered as <code>$KW_PROJECT</code>, (<code>calculator-application</code> in our case). 
-      </para>
-      <example>
-      <title>Login and project creation</title>
+        <title>Klocwork project creation on the Klocwork host.</title>
+        <para> From a web browser, login to the Klocwork host and create a project. The address of
+          the Klocwork host will be referred later as <code>$KW_HOST</code> (Something like
+            <code>http://the.internet.host.address:8082</code>). The project name will we referred
+          as <code>$KW_PROJECT</code>, (<code>calculator-application</code> in our case). </para>
+        <example>
+          <title>Login and project creation</title>
 
           <mediaobject>
             <imageobject role="fo">
-              <imagedata align="center" fileref="images/Login.png"
-                         scale="50"/>
+              <imagedata align="center" fileref="images/Login.png" scale="50"/>
             </imageobject>
           </mediaobject>
-                    <mediaobject>
+          <mediaobject>
             <imageobject role="fo">
-              <imagedata align="center" fileref="images/NewProject.png"
-                         scale="50"/>
+              <imagedata align="center" fileref="images/NewProject.png" scale="50"/>
             </imageobject>
           </mediaobject>
-        </example>	
-      <para>
-      Click the configuration tab of the created project and select your checking rules. 
-      Mind will generate both function like macro and macro with unparenthesed argument (string manipulation). 
-      So you better uncheck those rules (or accept unavoidable report about them).
-            </para>
-            <example>
-      <title>Project configuration</title>
+        </example>
+        <para> Click the configuration tab of the created project and select your checking rules.
+          Mind will generate both function like macro and macro with unparenthesized argument
+          (string manipulation). So you better uncheck those rules (or accept unavoidable report
+          about them). </para>
+        <example>
+          <title>Project configuration</title>
 
           <mediaobject>
             <imageobject role="fo">
-              <imagedata align="center" fileref="images/Configuration.png"
-                         scale="50"/>
+              <imagedata align="center" fileref="images/Configuration.png" scale="50"/>
             </imageobject>
           </mediaobject>
-          </example>
-                
-          
-  		</section>
-  	<section><title>Running the analysis</title>
-  		<para>
-  		On your developpement environement run the following commands :
-  		</para>    
-  		<example><title>Buildspec command</title>
-       <programlisting language="sh">
-kwinject --output buildspec.out make analysis
-  		</programlisting></example>
-  		<para>
-  		Will analyse the compilation steps from the command <code>make analysis</code> and create the <code>buildspec.out</code> which is necessary for the next step.
-  		</para>
-  		 <example><title>Analysis command</title>
-       <programlisting language="sh">
-kwbuildproject --force --url $KW_HOST/$KW_PROJECT \
---tables-directory tablesDir buildspec.out
-  		</programlisting></example>
-  		<para>
-  		Will launch the analysis and produce report in the <code>tableDir</code> directory.
-  		</para>
-  		<example><title>Issue tracking</title>
-       <programlisting language="sh">
-kwadmin --url $KW_HOST load $KW_PROJECT tablesDir
-  		</programlisting></example>
-  		<para>Will load the results to the klockwork host which provides a nice interface to view the reports, and tracking of the issues</para>  		
-  		</section>
-  		  	<section><title>Examining the defects</title>
-  		  	<para>
-  		  	From the klocwork host pages in your web browser (A refresh might be necessary) you can now vew the detected issues in your application. 
-  		  	</para>
-  		  	            <example>
-      <title>Issues summary</title>
+        </example>
+
+
+      </section>
+      <section>
+        <title>Running the analysis</title>
+        <para> On your development environment run the following commands : </para>
+        <example>
+          <title>Buildspec command</title>
+          <programlisting language="sh">kwinject --output buildspec.out make analysis</programlisting>
+        </example>
+        <para> Will analyse the compilation steps from the command <code>make analysis</code> and
+          create the <code>buildspec.out</code> which is necessary for the next step. </para>
+        <example>
+          <title>Analysis command</title>
+          <programlisting language="sh">kwbuildproject --force --url $KW_HOST/$KW_PROJECT \
+--tables-directory tablesDir buildspec.out</programlisting>
+        </example>
+        <para> Will launch the analysis and produce report in the <code>tablesDir</code> directory. </para>
+        <example>
+          <title>Issue tracking</title>
+          <programlisting language="sh">kwadmin --url $KW_HOST load $KW_PROJECT tablesDir  		</programlisting>
+        </example>
+        <para>Will load the results to the Klocwork host which provides a nice interface to view the
+          reports, and tracking of the issues</para>
+      </section>
+      <section>
+        <title>Examining the defects</title>
+        <para> From the klocwork host pages in your web browser (A refresh might be necessary) you
+          can now view the detected issues in your application. </para>
+        <example>
+          <title>Issues summary</title>
 
           <mediaobject>
             <imageobject role="fo">
-              <imagedata align="center" fileref="images/IssuesSummary.png"
-                         scale="50"/>
+              <imagedata align="center" fileref="images/IssuesSummary.png" scale="50"/>
             </imageobject>
           </mediaobject>
-          </example>
-<example>
-<title>Issue detail</title>
+        </example>
+        <example>
+          <title>Issue detail</title>
 
           <mediaobject>
             <imageobject role="fo">
-              <imagedata align="center" fileref="images/IssueSpecific.png"
-                         scale="50"/>
+              <imagedata align="center" fileref="images/IssueSpecific.png" scale="50"/>
             </imageobject>
           </mediaobject>
-          </example>
+        </example>
 
-  		  	</section>
-  </section>
-  
+      </section>
+    </section>
+
   </chapter>
 </book>

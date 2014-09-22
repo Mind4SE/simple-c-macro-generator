@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section[
+<!ENTITY % myents SYSTEM "../shared.ent" >
+%myents;
+]>
+<section xml:id="C-macro_aim" xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+      <title>Aim of the <emphasis>&productName;</emphasis> plugin</title>
+      <para> The <emphasis>&productName;</emphasis> plugin provides an alternative code generation
+        that does not rely on the Mind C preprocessor and thus does not modify the user source
+        code.</para>
+      <para>The <emphasis>&productName;</emphasis> plugin is able to produce the necessary glue to
+        compile each primitive definition of an application in a set of object files, but cannot
+        assemble those object files into an executable.</para>
+      <para>The <emphasis>&productName;</emphasis> plugin is targeted to be combined with source
+        code analysis tools, but does NOT fit to the task of releasing binaries, neither to execute
+        or benchmark code size. </para>
+    </section>  
