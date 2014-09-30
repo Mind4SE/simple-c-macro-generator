@@ -28,9 +28,6 @@ testBinOutputDir=$(confOutputDirVar)/test-binaries
 testDocOutputDir=$(confOutputDirVar)/test-doc
 analysisOutputDir=$(confOutputDirVar)/analysis
 
-# Append commonDependency to sourcePath
-sourcePath:=$(sourcePath):$(commonDependency)
-
 # Strings and comments management - Skip to "all:" for the real build.
 
 #Platform Separator handling

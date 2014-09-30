@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mindpath>
 	<mindpathentry kind="SOURCE" path="/calculator-application/src/main/mind"/>
-	<mindpathentry kind="SOURCE" path="/calculator-application/src/test/mind"/>
 	<mindpathentry kind="APPLI" path="main.Calculator:calc"/>
 </mindpath>
