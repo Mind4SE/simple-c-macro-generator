@@ -25,11 +25,11 @@
         <para>A <code>.c.h</code> for each <code>source</code> directive.</para>
       </listitem>
       <listitem>
-        <para>A <code>.itf.h</code> for each <code>provides</code>, <code>requires</code>, or
-            <code>@UsedIDL</code> directive.</para>
+        <para>A <code>.itf.h</code> for each <code>provides</code>, <code>requires</code> or
+            <code>@UseIDL</code> directive.</para>
       </listitem>
       <listitem>
-        <para>A <code>.itf.h</code> for each <code>":"</code> (interface inheritance), or
+        <para>A <code>.itf.h</code> for each <code>":"</code> (interface inheritance) or
             <code>@ImportIDL</code> directive found in a used interface.</para>
       </listitem>
       <listitem>
