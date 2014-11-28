@@ -34,19 +34,6 @@
 	</dependencies>
 
 	<build>
-		<pluginManagement>
-			<plugins>
-				<!-- Use Java 1.5 -->
-				<plugin>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.1</version>
-					<configuration>
-						<source>1.5</source>
-						<target>1.5</target>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 		<plugins>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -135,8 +122,8 @@
 						<inherited>false</inherited>
 						<configuration>
 							<targetDirectory>${project.build.directory}/site</targetDirectory>
-							<foCustomization>${basedir}/src/docbkx/xsl/minddoc-fo.xsl</foCustomization>
-							<draftWatermarkImage>${basedir}/src/docbkx/images/draft.png</draftWatermarkImage>
+							<foCustomization>${project.build.directory}/site/xsl/minddoc-fo.xsl</foCustomization>
+							<draftWatermarkImage>${project.build.directory}/site/images/draft.png</draftWatermarkImage>
 						</configuration>
 					</execution>
 					<!-- User Guide HTML executions -->
@@ -150,7 +137,7 @@
 						<configuration>
 							<targetDirectory>${project.build.directory}/site/printable</targetDirectory>
 							<imgSrcPath>../</imgSrcPath>
-							<htmlCustomization>${basedir}/src/docbkx/xsl/minddoc-html-printable.xsl</htmlCustomization>
+							<htmlCustomization>${project.build.directory}/site/xsl/minddoc-html-printable.xsl</htmlCustomization>
 							<htmlStylesheet>../css/docbook-printable.css</htmlStylesheet>
 						</configuration>
 					</execution>
@@ -164,7 +151,7 @@
 						<configuration>
 							<includes>c-macro-generator.xml</includes>
 							<targetDirectory>${project.build.directory}/site</targetDirectory>
-							<htmlCustomization>${basedir}/src/docbkx/xsl/minddoc-html.xsl</htmlCustomization>
+							<htmlCustomization>${project.build.directory}/site/xsl/minddoc-html.xsl</htmlCustomization>
 							<htmlStylesheet>css/docbook.css</htmlStylesheet>
 							<customizationParameters>
 								<parameter>
@@ -198,7 +185,7 @@
 							<chunkedOutput>true</chunkedOutput>
 							<targetDirectory>${project.build.directory}/site/userGuide</targetDirectory>
 							<imgSrcPath>../</imgSrcPath>
-							<htmlCustomization>${basedir}/src/docbkx/xsl/minddoc-chunk.xsl</htmlCustomization>
+							<htmlCustomization>${project.build.directory}/site/xsl/minddoc-chunk.xsl</htmlCustomization>
 							<htmlStylesheet>../css/docbook-chunk.css</htmlStylesheet>
 							<customizationParameters>
 								<parameter>
@@ -221,19 +208,9 @@
 						</configuration>
 					</execution>
 				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>net.sf.xslthl</groupId>
-						<artifactId>xslthl</artifactId>
-						<version>2.0.1</version>
-						<scope>runtime</scope>
-					</dependency>
-				</dependencies>
 				<configuration>
+					<sourceDirectory>${basedir}/src/docbkx</sourceDirectory>
 					<targetDirectory>${project.build.directory}/site</targetDirectory>
-					<highlightXslthlConfig>${basedir}/src/docbkx/xsl/xslthl-config.xml</highlightXslthlConfig>
-					<highlightSource>1</highlightSource>
-					<xincludeSupported>true</xincludeSupported>
 				</configuration>
 			</plugin>
 
