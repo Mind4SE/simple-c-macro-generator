@@ -56,6 +56,7 @@ ComponentDefinitionHeader(definition) ::= <<
 <AttributeStructures(definition)>
 
 #endif // __COMPONENT_<definition.name;format="toUpperCName">_ADL_H
+
 >>
 
 // -----------------------------------------------------------------------------
