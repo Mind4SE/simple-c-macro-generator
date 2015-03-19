@@ -228,14 +228,17 @@ public class SimpleGenerationTest extends AbstractSimpleGenerationTest {
 	}
 	
 	/**
-	 * Inheritance
+	 * Inheritance @Override
+	 * Note: Disabled - @Override patch not validated (yet, possibly never).
 	 */
+	/*
 	@Test(groups = {"simpleGeneration"})
 	public void interfaceInheritanceTest()
 			throws Exception {
 		String usedItfs[] = {"common.BasicTypes","common.Inheritance"};
 		compileADL("common.InterfaceInheritance",usedItfs);
 	}
+	*/
 	
 	/**
 	 * @Cflags annotation
